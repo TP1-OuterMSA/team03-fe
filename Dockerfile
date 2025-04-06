@@ -18,7 +18,9 @@ RUN npm run build
 FROM nginx:alpine
 
 # Nginx의 기본 정적 파일 경로에 빌드된 파일 복사
-COPY --from=build /usr/src/app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=build /app/build /usr/share/nginx/html
 
 # 포트 80 노출
 EXPOSE 80
