@@ -1,38 +1,30 @@
 import React from 'react';
 import styled from 'styled-components';
-import { MenuRankingItem, RankingPeriod } from '../../interface/menu';
+import { TrendingMenuData } from '../../interface/menu';
 
 interface TrendingMenusProps {
-  period: RankingPeriod;
-  items?: MenuRankingItem[];
+  items: TrendingMenuData[];
 }
 
-// 구현을 위한 mock data
-const MOCK_DATA: Record<RankingPeriod, MenuRankingItem[]> = {
-  WEEKLY: [
-    { id: 1, name: '김치찌개', score: 4.8, rankChange: 5, rank: 1 },
-    { id: 2, name: '비빔밥', score: 4.7, rankChange: 3, rank: 2 },
-    { id: 3, name: '돈까스', score: 4.6, rankChange: 2, rank: 3 },
-  ],
-  MONTHLY: [
-    { id: 4, name: '삼겹살', score: 4.9, rankChange: 7, rank: 1 },
-    { id: 5, name: '치킨', score: 4.8, rankChange: 4, rank: 2 },
-    { id: 6, name: '피자', score: 4.7, rankChange: 3, rank: 3 },
-  ],
-};
-
-const TrendingMenus: React.FC<TrendingMenusProps> = ({ period, items }) => {
-  const menuItems = items || MOCK_DATA[period];
+const TrendingMenus: React.FC<TrendingMenusProps> = ({ items = [], title }) => {
+  if (!items || items.length === 0) {
+    return (
+      <Container>
+        <Title>{title}</Title>
+        <EmptyMessage>데이터가 없습니다.</EmptyMessage>
+      </Container>
+    );
+  }
 
   return (
     <Container>
-      <Title>급상승 메뉴</Title>
+      <Title>{title}</Title>
       <MenuGrid>
-        {menuItems.map((item) => (
-          <MenuItem key={item.id}>
+        {items.map((item) => (
+          <MenuItem key={item.menuId}>
             <MenuImage>🍽️</MenuImage>
             <MenuInfo>
-              <MenuName>{item.name}</MenuName>
+              <MenuName>{item.menuName}</MenuName>
               <MenuScore>{item.score.toFixed(1)}점</MenuScore>
               <RankChange>↑{item.rankChange}</RankChange>
             </MenuInfo>
@@ -101,6 +93,12 @@ const MenuScore = styled.div`
 const RankChange = styled.div`
   color: #28a745;
   font-weight: bold;
+`;
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #666;
+  padding: 2rem;
 `;
 
 export default TrendingMenus;

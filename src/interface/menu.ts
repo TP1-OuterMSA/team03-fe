@@ -9,15 +9,29 @@ export interface MenuRankingItem {
 export type RankingPeriod = 'WEEKLY' | 'MONTHLY';
 
 export interface MenuRankingData {
-  topRankMenuResponse: MenuRankingItem[];
-  bottomRankMenuResponse: MenuRankingItem[];
+  menuId: number;
+  menuName: string;
+  score: number;
+  rankChange: number;
 }
 
 export interface ApiResponse<T> {
-  httpStatusCode: number;
+  success: boolean;
   message: string;
   data: T;
-  resultType: string;
 }
 
-export interface MenuRankingResponse extends ApiResponse<MenuRankingData> {}
+export interface MenuRankingResponse
+  extends ApiResponse<{
+    topRankMenuResponse: MenuRankingData[];
+    bottomRankMenuResponse: MenuRankingData[];
+  }> {}
+
+export interface TrendingMenuData {
+  menuId: number;
+  menuName: string;
+  score: number;
+  rankChange: number;
+}
+
+export interface TrendingMenuResponse extends ApiResponse<TrendingMenuData[]> {}

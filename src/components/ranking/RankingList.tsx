@@ -1,22 +1,30 @@
 import React from 'react';
 import styled from 'styled-components';
-import { MenuRankingItem } from '../../interface/menu';
+import { MenuRankingData } from '../../interface/menu';
 
 interface RankingListProps {
+  items: MenuRankingData[];
   title: string;
-  items: MenuRankingItem[];
-  type: 'top' | 'bottom';
 }
 
-const RankingList: React.FC<RankingListProps> = ({ title, items, type }) => {
+const RankingList: React.FC<RankingListProps> = ({ items = [], title }) => {
+  if (!items || items.length === 0) {
+    return (
+      <Container>
+        <Title>{title}</Title>
+        <EmptyMessage>데이터가 없습니다.</EmptyMessage>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <Title>{title}</Title>
       <List>
-        {items.map((item) => (
-          <ListItem key={item.id}>
-            <Rank>{item.rank}</Rank>
-            <Name>{item.name}</Name>
+        {items.map((item, index) => (
+          <ListItem key={item.menuId}>
+            <Rank>{index + 1}</Rank>
+            <Name>{item.menuName}</Name>
             <Score>{item.score.toFixed(1)}</Score>
             <RankChange $change={item.rankChange}>
               {item.rankChange > 0 ? '↑' : item.rankChange < 0 ? '↓' : '-'}
@@ -57,6 +65,7 @@ const ListItem = styled.div`
   border-radius: 8px;
   transition: transform 0.2s;
   cursor: pointer;
+
   &:hover {
     transform: translateX(4px);
   }
@@ -91,6 +100,12 @@ const RankChange = styled.div<{ $change: number }>`
     return '#6c757d';
   }};
   font-weight: bold;
+`;
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #666;
+  padding: 2rem;
 `;
 
 export default RankingList;

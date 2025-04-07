@@ -1,39 +1,30 @@
 import React from 'react';
 import styled from 'styled-components';
-import { MenuRankingItem, RankingPeriod } from '../../interface/menu';
+import { MenuRankingData } from '../../interface/menu';
 
 interface WantedMenusProps {
-  period: RankingPeriod;
-  items?: MenuRankingItem[];
+  items: MenuRankingData[];
 }
 
-// 구현을 위한 mock data
-const MOCK_DATA: Record<RankingPeriod, MenuRankingItem[]> = {
-  WEEKLY: [
-    { id: 1, name: '삼겹살', score: 234, rankChange: 0, rank: 1 },
-    { id: 2, name: '치킨', score: 187, rankChange: 0, rank: 2 },
-    { id: 3, name: '피자', score: 156, rankChange: 0, rank: 3 },
-  ],
-  MONTHLY: [
-    { id: 4, name: '김치찌개', score: 892, rankChange: 0, rank: 1 },
-    { id: 5, name: '비빔밥', score: 745, rankChange: 0, rank: 2 },
-    { id: 6, name: '돈까스', score: 621, rankChange: 0, rank: 3 },
-  ],
-};
-
-const WantedMenus: React.FC<WantedMenusProps> = ({ period, items }) => {
-  const menuItems = items || MOCK_DATA[period];
-  const medals = ['🥇', '🥈', '🥉'];
+const WantedMenus: React.FC<WantedMenusProps> = ({ items = [], title }) => {
+  if (!items || items.length === 0) {
+    return (
+      <Container>
+        <Title>{title}</Title>
+        <EmptyMessage>데이터가 없습니다.</EmptyMessage>
+      </Container>
+    );
+  }
 
   return (
     <Container>
-      <Title>먹고싶은 메뉴 TOP 3</Title>
+      <Title>{title}</Title>
       <MenuGrid>
-        {menuItems.map((item, index) => (
-          <MenuItem key={item.id} $rank={index + 1}>
-            <Medal>{medals[index]}</Medal>
-            <MenuName>{item.name}</MenuName>
-            <VoteCount>투표수: {item.score}</VoteCount>
+        {items.slice(0, 3).map((item, index) => (
+          <MenuItem key={item.menuId} $rank={index + 1}>
+            <Medal>{index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}</Medal>
+            <MenuName>{item.menuName}</MenuName>
+            <VoteCount>투표수: {Math.round(item.score)}</VoteCount>
           </MenuItem>
         ))}
       </MenuGrid>
@@ -90,6 +81,12 @@ const MenuName = styled.div`
 const VoteCount = styled.div`
   color: #666;
   font-size: 0.9rem;
+`;
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #666;
+  padding: 2rem;
 `;
 
 export default WantedMenus;

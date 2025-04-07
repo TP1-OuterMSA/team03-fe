@@ -47,6 +47,7 @@ const SidebarContainer = styled.aside`
 const LogoContainer = styled.div`
   padding: ${({ theme }) => theme.spacing.md} 0;
   margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-top: 1rem;
 `;
 
 const LogoLink = styled(Link)`
@@ -86,8 +87,7 @@ const NavItem = styled(Link)<{ $isActive: boolean }>`
   gap: ${({ theme }) => theme.spacing.md};
   padding: ${({ theme }) => theme.spacing.md};
   text-decoration: none;
-  color: ${({ theme, $isActive }) =>
-    $isActive ? theme.colors.primary : theme.colors.text.primary};
+  color: ${({ theme, $isActive }) => ($isActive ? theme.colors.primary : theme.colors.text.primary)};
   background-color: ${({ theme, $isActive }) => ($isActive ? theme.colors.hover : 'transparent')};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   transition: all ${({ theme }) => theme.transitions.default};
