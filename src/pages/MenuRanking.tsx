@@ -1,32 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { getMenuRankings } from '../api/menuService';
-import { MenuRankingItem, RankingPeriod } from '../interface/menu';
+import { getMenuRankings, getTrendingMenus } from '../api/menuService';
+import { MenuRankingData, RankingPeriod, TrendingMenuData } from '../interface/menu';
 import RankingList from '../components/ranking/RankingList';
 import TrendingMenus from '../components/ranking/TrendingMenus';
 import WantedMenus from '../components/ranking/WantedMenus';
 
 const MenuRanking = () => {
   const [period, setPeriod] = useState<RankingPeriod>('WEEKLY');
-  const [topRankings, setTopRankings] = useState<MenuRankingItem[]>([]);
-  const [bottomRankings, setBottomRankings] = useState<MenuRankingItem[]>([]);
+  const [topRankings, setTopRankings] = useState<MenuRankingData[]>([]);
+  const [bottomRankings, setBottomRankings] = useState<MenuRankingData[]>([]);
+  const [trendingMenus, setTrendingMenus] = useState<TrendingMenuData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchRankings = async () => {
+    const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const response = await getMenuRankings(period);
-        setTopRankings(response.data.topRankMenuResponse);
-        setBottomRankings(response.data.bottomRankMenuResponse);
-      } catch (error) {
-        console.error('랭킹 데이터를 불러오는데 실패했습니다:', error);
+        const [rankingsResponse, trendingResponse] = await Promise.all([
+          getMenuRankings(period),
+          getTrendingMenus(period),
+        ]);
+
+        setTopRankings(rankingsResponse.data.topRankMenuResponse);
+        setBottomRankings(rankingsResponse.data.bottomRankMenuResponse);
+        setTrendingMenus(trendingResponse.data);
+      } catch (err) {
+        console.error('데이터를 불러오는데 실패했습니다:', err);
+        setError('데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRankings();
+    fetchData();
   }, [period]);
 
   return (
@@ -45,14 +54,16 @@ const MenuRanking = () => {
 
       {loading ? (
         <LoadingText>로딩 중...</LoadingText>
+      ) : error ? (
+        <ErrorMessage>{error}</ErrorMessage>
       ) : (
         <>
           <RankingsContainer>
-            <RankingList title="인기 메뉴 TOP 5" items={topRankings} type="top" />
-            <RankingList title="하위 메뉴 TOP 5" items={bottomRankings} type="bottom" />
+            <RankingList title="인기 메뉴 TOP 5" items={topRankings} />
+            <RankingList title="하위 메뉴 TOP 5" items={bottomRankings} />
           </RankingsContainer>
-          <TrendingMenus period={period} />
-          <WantedMenus period={period} />
+          <TrendingMenus title="급상승 메뉴 TOP 3" items={trendingMenus} />
+          <WantedMenus title="먹고싶은 메뉴 TOP 3" items={topRankings} />
         </>
       )}
     </MenuRankingContainer>
@@ -63,6 +74,7 @@ const MenuRankingContainer = styled.div`
   padding: ${({ theme }) => theme.spacing.lg};
   max-width: 1200px;
   margin: 0 auto;
+  margin-top: 2rem;
 `;
 
 const RankingHeader = styled.div`
@@ -70,6 +82,12 @@ const RankingHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+  }
 `;
 
 const PeriodToggle = styled.div`
@@ -99,6 +117,16 @@ const LoadingText = styled.div`
   text-align: center;
   padding: 2rem;
   color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
 `;
 
 export default MenuRanking;
