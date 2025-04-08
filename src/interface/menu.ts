@@ -21,11 +21,15 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export interface MenuRankingResponse
-  extends ApiResponse<{
-    topRankMenuResponse: MenuRankingData[];
-    bottomRankMenuResponse: MenuRankingData[];
-  }> {}
+export interface MenuRankingResponse {
+  httpStatusCode: number;
+  message: string;
+  data: {
+    topRankMenuResponseDto: MenuRankingItem[];
+    bottomRankMenuResponseDto: MenuRankingItem[];
+  };
+  resultType: string;
+}
 
 export interface TrendingMenuData {
   menuId: number;
@@ -34,4 +38,9 @@ export interface TrendingMenuData {
   rankChange: number;
 }
 
-export interface TrendingMenuResponse extends ApiResponse<TrendingMenuData[]> {}
+export interface TrendingMenuResponse {
+  httpStatusCode: number;
+  message: string;
+  data: MenuRankingItem[];
+  resultType: string;
+}

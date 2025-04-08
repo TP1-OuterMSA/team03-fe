@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { getMenuRankings, getTrendingMenus } from '../api/menuService';
-import { MenuRankingData, RankingPeriod, TrendingMenuData } from '../interface/menu';
+import { MenuRankingData, RankingPeriod, MenuRankingItem, TrendingMenuData } from '../interface/menu';
 import RankingList from '../components/ranking/RankingList';
 import TrendingMenus from '../components/ranking/TrendingMenus';
 import WantedMenus from '../components/ranking/WantedMenus';
@@ -24,9 +24,23 @@ const MenuRanking = () => {
           getTrendingMenus(period),
         ]);
 
-        setTopRankings(rankingsResponse.data.topRankMenuResponse);
-        setBottomRankings(rankingsResponse.data.bottomRankMenuResponse);
-        setTrendingMenus(trendingResponse.data);
+        const mapRankingItemToData = (item: MenuRankingItem): MenuRankingData => ({
+          menuId: item.id,
+          menuName: item.name,
+          score: item.score,
+          rankChange: item.rankChange,
+        });
+
+        const mapRankingItemToTrendingData = (item: MenuRankingItem): TrendingMenuData => ({
+          menuId: item.id,
+          menuName: item.name,
+          score: item.score,
+          rankChange: item.rankChange,
+        });
+
+        setTopRankings(rankingsResponse.data.topRankMenuResponseDto.map(mapRankingItemToData));
+        setBottomRankings(rankingsResponse.data.bottomRankMenuResponseDto.map(mapRankingItemToData));
+        setTrendingMenus(trendingResponse.data.map(mapRankingItemToTrendingData));
       } catch (err) {
         console.error('데이터를 불러오는데 실패했습니다:', err);
         setError('데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.');

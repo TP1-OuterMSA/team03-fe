@@ -4,6 +4,7 @@ import { TrendingMenuData } from '../../interface/menu';
 
 interface TrendingMenusProps {
   items: TrendingMenuData[];
+  title: string;
 }
 
 const TrendingMenus: React.FC<TrendingMenusProps> = ({ items = [], title }) => {

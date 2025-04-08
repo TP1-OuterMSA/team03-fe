@@ -4,6 +4,7 @@ import { MenuRankingData } from '../../interface/menu';
 
 interface WantedMenusProps {
   items: MenuRankingData[];
+  title: string;
 }
 
 const WantedMenus: React.FC<WantedMenusProps> = ({ items = [], title }) => {
