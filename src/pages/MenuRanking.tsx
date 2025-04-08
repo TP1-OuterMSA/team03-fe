@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { getMenuRankings, getTrendingMenus } from '../api/menuService';
-import { MenuRankingData, RankingPeriod, TrendingMenuData } from '../interface/menu';
+import { MenuRankingData, RankingPeriod, MenuRankingItem } from '../interface/menu';
 import RankingList from '../components/ranking/RankingList';
 import TrendingMenus from '../components/ranking/TrendingMenus';
 import WantedMenus from '../components/ranking/WantedMenus';
@@ -10,7 +10,7 @@ const MenuRanking = () => {
   const [period, setPeriod] = useState<RankingPeriod>('WEEKLY');
   const [topRankings, setTopRankings] = useState<MenuRankingData[]>([]);
   const [bottomRankings, setBottomRankings] = useState<MenuRankingData[]>([]);
-  const [trendingMenus, setTrendingMenus] = useState<TrendingMenuData[]>([]);
+  const [trendingMenus, setTrendingMenus] = useState<MenuRankingItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,8 +24,16 @@ const MenuRanking = () => {
           getTrendingMenus(period),
         ]);
 
-        setTopRankings(rankingsResponse.data.topRankMenuResponse);
-        setBottomRankings(rankingsResponse.data.bottomRankMenuResponse);
+        // API 응답 데이터를 컴포넌트에서 사용하는 형식으로 변환
+        const mapRankingItemToData = (item: MenuRankingItem): MenuRankingData => ({
+          menuId: item.id,
+          menuName: item.name,
+          score: item.score,
+          rankChange: item.rankChange,
+        });
+
+        setTopRankings(rankingsResponse.data.topRankMenuResponseDto.map(mapRankingItemToData));
+        setBottomRankings(rankingsResponse.data.bottomRankMenuResponseDto.map(mapRankingItemToData));
         setTrendingMenus(trendingResponse.data);
       } catch (err) {
         console.error('데이터를 불러오는데 실패했습니다:', err);

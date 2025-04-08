@@ -1,9 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
-import { TrendingMenuData } from '../../interface/menu';
+import { MenuRankingItem } from '../../interface/menu';
 
 interface TrendingMenusProps {
-  items: TrendingMenuData[];
+  items: MenuRankingItem[];
+  title: string;
 }
 
 const TrendingMenus: React.FC<TrendingMenusProps> = ({ items = [], title }) => {
@@ -21,10 +22,10 @@ const TrendingMenus: React.FC<TrendingMenusProps> = ({ items = [], title }) => {
       <Title>{title}</Title>
       <MenuGrid>
         {items.map((item) => (
-          <MenuItem key={item.menuId}>
+          <MenuItem key={item.id}>
             <MenuImage>🍽️</MenuImage>
             <MenuInfo>
-              <MenuName>{item.menuName}</MenuName>
+              <MenuName>{item.name}</MenuName>
               <MenuScore>{item.score.toFixed(1)}점</MenuScore>
               <RankChange>↑{item.rankChange}</RankChange>
             </MenuInfo>
