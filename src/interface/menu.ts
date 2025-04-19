@@ -44,3 +44,16 @@ export interface TrendingMenuResponse {
   data: MenuRankingItem[];
   resultType: string;
 }
+
+export interface DesiredFoodItem {
+  rank: number;
+  foodName: string;
+  score: number;
+}
+
+export interface DesiredFoodResponse {
+  httpStatusCode: number;
+  message: string;
+  data: DesiredFoodItem[];
+  resultType: string;
+}
