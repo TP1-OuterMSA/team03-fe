@@ -67,7 +67,7 @@ jobs:
 
       - name: Update image tag in Helm chart
         run: |
-          cd msa-infra/charts/services/${{ secrets.APP_NAME }}
+          cd msa-infra/charts/services/${{ env.APP_NAME }}
           OLD_TAG=$(grep -oP 'tag: "\K[^"]+' values.yaml)
           sed -i "s/tag: \".*\"/tag: \"sha-${{ env.SHORT_SHA }}\"/g" values.yaml
           echo "Updated values.yaml content:"
