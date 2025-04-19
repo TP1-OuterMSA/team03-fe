@@ -1,13 +1,64 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { MenuRankingData } from '../../interface/menu';
+import { DesiredFoodItem, RankingPeriod } from '../../interface/menu';
+import { getDesiredFoods } from '../../api/menuService';
 
 interface WantedMenusProps {
-  items: MenuRankingData[];
   title: string;
+  period: RankingPeriod;
 }
 
-const WantedMenus: React.FC<WantedMenusProps> = ({ items = [], title }) => {
+const WantedMenus: React.FC<WantedMenusProps> = ({ title, period }) => {
+  const [items, setItems] = useState<DesiredFoodItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // 날짜 포맷팅 함수
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // period에 따라 날짜 범위 계산
+  const getDateRange = (selectedPeriod: RankingPeriod) => {
+    const endDate = new Date();
+    const startDate = new Date();
+    const days = selectedPeriod === 'WEEKLY' ? 7 : 30;
+    startDate.setDate(startDate.getDate() - days);
+
+    return {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+    };
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const { startDate, endDate } = getDateRange(period);
+        const response = await getDesiredFoods(startDate, endDate);
+        setItems(response.data);
+      } catch (error) {
+        console.error('먹고싶은 메뉴 데이터를 불러오는데 실패했습니다:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [period]);
+
+  if (loading) {
+    return (
+      <Container>
+        <Title>{title}</Title>
+        <EmptyMessage>로딩 중...</EmptyMessage>
+      </Container>
+    );
+  }
+
   if (!items || items.length === 0) {
     return (
       <Container>
@@ -22,9 +73,9 @@ const WantedMenus: React.FC<WantedMenusProps> = ({ items = [], title }) => {
       <Title>{title}</Title>
       <MenuGrid>
         {items.slice(0, 3).map((item, index) => (
-          <MenuItem key={item.menuId} $rank={index + 1}>
+          <MenuItem key={`${item.foodName}-${index}`} $rank={index + 1}>
             <Medal>{index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}</Medal>
-            <MenuName>{item.menuName}</MenuName>
+            <MenuName>{item.foodName}</MenuName>
             <VoteCount>투표수: {Math.round(item.score)}</VoteCount>
           </MenuItem>
         ))}
