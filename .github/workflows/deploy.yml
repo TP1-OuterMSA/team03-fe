@@ -7,11 +7,12 @@ on:
     branches: [ release ]
 
 env:
-  AWS_REGION: ap-northeast-2                   # AWS 리전을 설정하세요
-  ECR_REPOSITORY: 809691348554.dkr.ecr.ap-northeast-2.amazonaws.com/team03-fe-repository     # ECR 저장소 이름을 설정하세요
-  EKS_CLUSTER_NAME: msa      # EKS 클러스터 이름을 설정하세요
-  ARGOCD_APP_NAME: team03-fe        # ArgoCD 애플리케이션 이름을 설정하세요
-  ARGOCD_SERVER: argocd-server.argocd        # ArgoCD 서버 주소를 설정하세요
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: 809691348554.dkr.ecr.ap-northeast-2.amazonaws.com/team03-fe-repository
+  IMAGE_TAG: latest
+  EKS_CLUSTER_NAME: msa
+  ARGOCD_APP_NAME: team03-fe
+  ARGOCD_SERVER: argocd-server.argocd
 
 jobs:
   build-and-deploy:
@@ -54,10 +55,10 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t ${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}}} .
+          docker push ${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}}}
           # 이미지 URI를 출력하여 다음 단계에서 사용
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image=${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}}}" >> $GITHUB_OUTPUT
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
