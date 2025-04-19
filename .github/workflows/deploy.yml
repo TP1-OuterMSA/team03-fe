@@ -61,10 +61,19 @@ jobs:
       - name: Checkout infrastructure repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
           repository: TP1-OuterMSA/msa-infra
           path: msa-infra
           token: ${{ secrets.GH_PAT }}
+
+      - name: Debug directory structure
+        run: |
+          cd msa-infra
+          ls -la
+          echo "Checking charts directory:"
+          ls -la charts/
+          echo "Checking services directory:"
+          ls -la charts/services/ || echo "Services directory not found"
+          find . -name "team03-fe" -type d
 
       - name: Update image tag in Helm chart
         run: |
