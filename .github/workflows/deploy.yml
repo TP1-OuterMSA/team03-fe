@@ -1,9 +1,5 @@
 name: Frontend Development Deploy
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - 'release'
   push:
     branches: [ release ]
 
