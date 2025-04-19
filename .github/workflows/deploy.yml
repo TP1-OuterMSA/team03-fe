@@ -78,6 +78,11 @@ jobs:
       - name: Update image tag in Helm chart
         run: |
           cd msa-infra/charts/services/${{ env.APP_NAME }}
+          
+          if [ -f values.yaml ]; then
+            echo "values.yaml exists"
+            cat values.yaml | head -10  # 파일 내용 일부 출력
+          
           OLD_TAG=$(grep -oP 'tag: "\K[^"]+' values.yaml)
           sed -i "s/tag: \".*\"/tag: \"sha-${{ env.SHORT_SHA }}\"/g" values.yaml
           echo "Updated values.yaml content:"
