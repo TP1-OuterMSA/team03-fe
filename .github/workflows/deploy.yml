@@ -55,10 +55,10 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t ${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}}} .
-          docker push ${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}}}
+          docker build -t ${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}} .
+          docker push ${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}}
           # 이미지 URI를 출력하여 다음 단계에서 사용
-          echo "image=${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}}}" >> $GITHUB_OUTPUT
+          echo "image=${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}}" >> $GITHUB_OUTPUT
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
