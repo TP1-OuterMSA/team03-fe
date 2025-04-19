@@ -1,28 +1,32 @@
-name: React App CI/CD with Infrastructure Update
-
+name: Frontend Development Deploy
 on:
-  push:
-    branches: [ release ]
   pull_request:
+    types: [closed]
+    branches:
+      - 'release'
+  push:
     branches: [ release ]
 
 env:
-  AWS_REGION: ap-northeast-2
+  APP_ENV: development
+  REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+  VITE_API_URL: ${{ secrets.SERVER_HOST }}
+  APP_NAME: team03-fe
   ECR_REPOSITORY: 809691348554.dkr.ecr.ap-northeast-2.amazonaws.com/team03-fe-repository
-
+permissions:
+  id-token: write
+  contents: read
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-
+  deploy:
+    if: ${{ github.event.pull_request.merged && !contains(github.event.pull_request.labels.*.name, 'Skip:CD') }}
+    name: Deploy
+    runs-on: ubuntu-22.04
+    environment: development
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
@@ -34,43 +38,41 @@ jobs:
       - name: Build React application
         run: npm run build
 
-      - name: Save short SHA
-        id: short-sha
-        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Save short SHA
+        id: short-sha
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+          DOCKER_TAG: ${{ env.APP_ENV }}
         run: |
-          docker build -t ${{env.ECR_REPOSITORY}}:${{env.IMAGE_TAG}} -t ${{env.ECR_REPOSITORY}}:sha-$IMAGE_TAG .
-          docker push ${{env.ECR_REPOSITORY}}:$IMAGE_TAG
-          docker push ${{env.ECR_REPOSITORY}}:sha-$IMAGE_TAG
-          echo "image=${{env.ECR_REPOSITORY}}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t ${{ env.ECR_REPOSITORY }}:sha-${{ env.SHORT_SHA }} .
+          docker push $ECR_REGISTRY/${{ env.ECR_REPO }}:sha-${{ env.SHORT_SHA }}
 
-      # Infrastructure Repository Update Steps
+      # Infra 저장소 업데이트 단계
       - name: Checkout infrastructure repository
         uses: actions/checkout@v3
         with:
-          repository: TP1-OuterMSA/msa-infra  # Replace with your actual infra repo
+          repository: TP1-OuterMSA/msa-infra
           path: msa-infra
-          token: ${{ secrets.GH_PAT }}  # You'll need to create this secret for repo access
+          token: ${{ secrets.GH_PAT }}
 
       - name: Update image tag in Helm chart
         run: |
-          cd msa-infra/charts/services/team03-fe  # Adjust path to your app's chart
+          cd msa-infra/charts/services/${{ secrets.APP_NAME }}
           OLD_TAG=$(grep -oP 'tag: "\K[^"]+' values.yaml)
           sed -i "s/tag: \".*\"/tag: \"sha-${{ env.SHORT_SHA }}\"/g" values.yaml
           echo "Updated values.yaml content:"
@@ -88,4 +90,4 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git diff-index --quiet HEAD || (git commit -m "Update team03-fe image tag to sha-${{ env.SHORT_SHA }}" && git push)
+          git diff-index --quiet HEAD || (git commit -m "Update ${{ secrets.APP_NAME }} image tag to sha-${{ env.SHORT_SHA }}" && git push)
