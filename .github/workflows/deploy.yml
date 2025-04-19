@@ -12,7 +12,7 @@ env:
   IMAGE_TAG: latest
   EKS_CLUSTER_NAME: msa-cluster
   ARGOCD_APP_NAME: team03-fe
-  ARGOCD_SERVER: argocd-server.argocd
+  ARGOCD_SERVER: argocd-server.argocd.svc.cluster.local
 
 jobs:
   build-and-deploy:
