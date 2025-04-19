@@ -1,27 +1,25 @@
-# 빌드 단계를 위한 Node 이미지 사용
-FROM node:18-alpine AS build
+# 빌드 단계
+FROM node:18-alpine as build
 
-# 작업 디렉토리를 현재 디렉토리로 설정
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# 의존성 파일 복사 및 설치
+# 종속성 설치
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# 소스 코드 복사
-COPY . ./
-
-# 애플리케이션 빌드
+# 소스 코드 복사 및 빌드
+COPY . .
 RUN npm run build
 
-# 프로덕션 단계
+# 실행 단계
 FROM nginx:alpine
 
-# Nginx의 기본 정적 파일 경로에 빌드된 파일 복사
-COPY --from=build /usr/src/app/dist /usr/share/nginx/html
+# nginx 설정
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 포트 80 노출
+# 빌드 결과물을 nginx 서비스 디렉토리로 복사
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 80
 
-# Nginx 실행
 CMD ["nginx", "-g", "daemon off;"]
