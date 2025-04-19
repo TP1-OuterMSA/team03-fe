@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
+          cache-dependency-path: '**/package.json'   # lock 파일을 사용하지 않도록 수정
 
       - name: Install dependencies
         run: npm install
