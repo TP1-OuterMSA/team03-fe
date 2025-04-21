@@ -1,9 +1,12 @@
 name: Frontend Development Deploy
 on:
+  push:
+    branches: [ release ]
   pull_request:
     types: [closed]
     branches:
       - 'develop'
+
 env:
   APP_ENV: development
   REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
