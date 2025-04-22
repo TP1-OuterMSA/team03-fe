@@ -77,7 +77,7 @@ const MenuRanking = () => {
             <RankingList title="하위 메뉴 TOP 5" items={bottomRankings} />
           </RankingsContainer>
           <TrendingMenus title="급상승 메뉴 TOP 3" items={trendingMenus} />
-          <WantedMenus title="먹고싶은 메뉴 TOP 3" items={topRankings} />
+          <WantedMenus title="먹고싶은 메뉴 TOP 3" period={period} />
         </>
       )}
     </MenuRankingContainer>
