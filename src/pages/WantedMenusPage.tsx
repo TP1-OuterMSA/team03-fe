@@ -1,0 +1,369 @@
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { DesiredFoodItem, PeriodType } from '../interface/wantedMenu';
+import { getDesiredFoodsByPeriod } from '../api/wantedMenuService';
+
+const WantedMenusPage: React.FC = () => {
+  const [items, setItems] = useState<DesiredFoodItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('FIRST_SEMESTER');
+  const [periodCategory, setPeriodCategory] = useState<'semester' | 'month'>('semester');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await getDesiredFoodsByPeriod(selectedPeriod);
+        setItems(response.data);
+      } catch (error) {
+        console.error('먹고싶은 메뉴 데이터를 불러오는데 실패했습니다:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedPeriod]);
+
+  const handlePeriodChange = (period: PeriodType) => {
+    setSelectedPeriod(period);
+  };
+
+  const handleCategoryChange = (category: 'semester' | 'month') => {
+    setPeriodCategory(category);
+    // 카테고리 변경 시 해당 카테고리의 첫 번째 옵션 선택
+    if (category === 'semester') {
+      setSelectedPeriod('FIRST_SEMESTER');
+    } else {
+      setSelectedPeriod('MONTH_1');
+    }
+  };
+
+  // 현재 선택된 기간 이름 표시용
+  const getPeriodName = (): string => {
+    if (selectedPeriod === 'FIRST_SEMESTER') return '1학기';
+    if (selectedPeriod === 'SECOND_SEMESTER') return '2학기';
+
+    const monthMatch = selectedPeriod.match(/MONTH_(\d+)/);
+    if (monthMatch) {
+      return `${monthMatch[1]}월`;
+    }
+
+    return '';
+  };
+
+  // 현재 연도 가져오기
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <PageContainer>
+      <Title>먹고싶은 메뉴 순위</Title>
+
+      <PeriodSelectorContainer>
+        <PeriodCategoryTabs>
+          <PeriodCategoryTab $isActive={periodCategory === 'semester'} onClick={() => handleCategoryChange('semester')}>
+            학기별 보기
+          </PeriodCategoryTab>
+          <PeriodCategoryTab $isActive={periodCategory === 'month'} onClick={() => handleCategoryChange('month')}>
+            월별 보기
+          </PeriodCategoryTab>
+        </PeriodCategoryTabs>
+
+        <PeriodOptionsWrapper>
+          {periodCategory === 'semester' ? (
+            <SemesterOptions>
+              <SemesterOption
+                $isActive={selectedPeriod === 'FIRST_SEMESTER'}
+                onClick={() => handlePeriodChange('FIRST_SEMESTER')}
+              >
+                <SemesterTitle>1학기</SemesterTitle>
+                <SemesterPeriod>{currentYear}년 3월 ~ 8월</SemesterPeriod>
+              </SemesterOption>
+              <SemesterOption
+                $isActive={selectedPeriod === 'SECOND_SEMESTER'}
+                onClick={() => handlePeriodChange('SECOND_SEMESTER')}
+              >
+                <SemesterTitle>2학기</SemesterTitle>
+                <SemesterPeriod>
+                  {currentYear}년 9월 ~ {currentYear + 1}년 2월
+                </SemesterPeriod>
+              </SemesterOption>
+            </SemesterOptions>
+          ) : (
+            <MonthOptions>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                <MonthOption
+                  key={month}
+                  $isActive={selectedPeriod === `MONTH_${month}`}
+                  onClick={() => handlePeriodChange(`MONTH_${month}` as PeriodType)}
+                >
+                  {month}월
+                </MonthOption>
+              ))}
+            </MonthOptions>
+          )}
+        </PeriodOptionsWrapper>
+      </PeriodSelectorContainer>
+
+      <SelectedPeriodDisplay>
+        <CalendarIcon>📅</CalendarIcon>
+        <SelectedPeriodText>
+          {currentYear}년 {getPeriodName()} 먹고싶은 메뉴 순위
+        </SelectedPeriodText>
+      </SelectedPeriodDisplay>
+
+      {loading ? (
+        <LoadingContainer>로딩 중...</LoadingContainer>
+      ) : !items || items.length === 0 ? (
+        <EmptyMessage>데이터가 없습니다.</EmptyMessage>
+      ) : (
+        <RankingContainer>
+          <TopThreeContainer>
+            {items.slice(0, 3).map((item, index) => (
+              <TopMenuItem key={`${item.foodName}-${index}`} $rank={index + 1}>
+                <Medal>{index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}</Medal>
+                <MenuName>{item.foodName}</MenuName>
+                <VoteCount>투표수: {Math.round(item.score)}</VoteCount>
+              </TopMenuItem>
+            ))}
+          </TopThreeContainer>
+
+          {items.length > 3 && (
+            <OtherRankingsContainer>
+              {items.slice(3).map((item, index) => (
+                <RankingItem key={`${item.foodName}-${index + 3}`}>
+                  <RankNumber>{index + 4}</RankNumber>
+                  <ItemName>{item.foodName}</ItemName>
+                  <ItemScore>{Math.round(item.score)}</ItemScore>
+                </RankingItem>
+              ))}
+            </OtherRankingsContainer>
+          )}
+        </RankingContainer>
+      )}
+    </PageContainer>
+  );
+};
+
+const PageContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+`;
+
+const Title = styled.h1`
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+`;
+
+const PeriodSelectorContainer = styled.div`
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  overflow: hidden;
+`;
+
+const PeriodCategoryTabs = styled.div`
+  display: flex;
+  border-bottom: 1px solid #eee;
+`;
+
+const PeriodCategoryTab = styled.div<{ $isActive: boolean }>`
+  flex: 1;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  background-color: ${(props) => (props.$isActive ? '#f8f9fa' : 'transparent')};
+  font-weight: ${(props) => (props.$isActive ? '600' : '400')};
+  color: ${(props) => (props.$isActive ? '#228be6' : '#495057')};
+  border-bottom: ${(props) => (props.$isActive ? '2px solid #228be6' : 'none')};
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${(props) => (props.$isActive ? '#f8f9fa' : '#f1f3f5')};
+  }
+`;
+
+const PeriodOptionsWrapper = styled.div`
+  padding: 1.5rem;
+`;
+
+const SemesterOptions = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+`;
+
+const SemesterOption = styled.div<{ $isActive: boolean }>`
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: ${(props) => (props.$isActive ? '#e7f5ff' : '#f8f9fa')};
+  border: 2px solid ${(props) => (props.$isActive ? '#228be6' : 'transparent')};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const SemesterTitle = styled.div`
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+`;
+
+const SemesterPeriod = styled.div`
+  font-size: 0.9rem;
+  color: #666;
+`;
+
+const MonthOptions = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.75rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const MonthOption = styled.div<{ $isActive: boolean }>`
+  padding: 1rem 0.5rem;
+  text-align: center;
+  border-radius: 8px;
+  background-color: ${(props) => (props.$isActive ? '#e7f5ff' : '#f8f9fa')};
+  border: 2px solid ${(props) => (props.$isActive ? '#228be6' : 'transparent')};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const SelectedPeriodDisplay = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const CalendarIcon = styled.span`
+  margin-right: 0.75rem;
+  font-size: 1.5rem;
+`;
+
+const SelectedPeriodText = styled.div``;
+
+const RankingContainer = styled.div`
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
+const TopThreeContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding: 2rem;
+  background-color: #f8f9fa;
+`;
+
+const TopMenuItem = styled.div<{ $rank: number }>`
+  background: ${(props) => (props.$rank === 1 ? '#fff3dc' : 'white')};
+  border-radius: 8px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+`;
+
+const Medal = styled.div`
+  font-size: 3rem;
+  margin-bottom: 1rem;
+`;
+
+const MenuName = styled.div`
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+`;
+
+const VoteCount = styled.div`
+  color: #666;
+  font-size: 1rem;
+`;
+
+const OtherRankingsContainer = styled.div`
+  padding: 1rem 2rem;
+`;
+
+const RankingItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const RankNumber = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-right: 1rem;
+`;
+
+const ItemName = styled.div`
+  flex: 1;
+  font-weight: 500;
+`;
+
+const ItemScore = styled.div`
+  color: #666;
+  font-weight: 500;
+`;
+
+const LoadingContainer = styled.div`
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+export default WantedMenusPage;
