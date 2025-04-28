@@ -38,3 +38,8 @@ export interface SatisfactionTrendResponse {
   };
   resultType: string;
 }
+
+export interface CategoryRatingData {
+  category: string;
+  score: number;
+}
