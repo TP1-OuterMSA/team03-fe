@@ -173,21 +173,20 @@ const Dashboard = () => {
   
     if (categoryChartInstance.current) categoryChartInstance.current.destroy();
   
-    // 색상 배열: 빨강, 파랑, 노랑, 초록, 보라
     const backgroundColors = [
-      'rgba(255, 99, 132, 0.2)',  // 빨간색
-      'rgba(54, 162, 235, 0.2)',  // 파란색
-      'rgba(255, 206, 86, 0.2)',  // 노란색
-      'rgba(75, 192, 192, 0.2)',  // 초록색
-      'rgba(153, 102, 255, 0.2)', // 보라색
+      'rgba(255, 99, 132, 0.2)', 
+      'rgba(54, 162, 235, 0.2)',  
+      'rgba(255, 206, 86, 0.2)', 
+      'rgba(75, 192, 192, 0.2)', 
+      'rgba(153, 102, 255, 0.2)', 
     ];
   
     const borderColors = [
-      'rgba(255, 99, 132, 1)',    // 빨간색 테두리
-      'rgba(54, 162, 235, 1)',    // 파란색 테두리
-      'rgba(255, 206, 86, 1)',    // 노란색 테두리
-      'rgba(75, 192, 192, 1)',    // 초록색 테두리
-      'rgba(153, 102, 255, 1)',   // 보라색 테두리
+      'rgba(255, 99, 132, 1)',   
+      'rgba(54, 162, 235, 1)',    
+      'rgba(255, 206, 86, 1)',    
+      'rgba(75, 192, 192, 1)',    
+      'rgba(153, 102, 255, 1)',  
     ];
   
     categoryChartInstance.current = new Chart(ctx, {
@@ -198,10 +197,10 @@ const Dashboard = () => {
           {
             label: '평점',
             data: data.map((d) => d.score),
-            backgroundColor: backgroundColors, // 색상 배열
-            borderColor: borderColors,         // 테두리 색상 배열
+            backgroundColor: backgroundColors, 
+            borderColor: borderColors,     
             borderWidth: 1,
-            borderRadius: 12, // 둥근 모서리
+            borderRadius: 12, 
           },
         ],
       },
@@ -214,12 +213,12 @@ const Dashboard = () => {
             max: 5,
             ticks: {
               font: {
-                size: 14, // 글자 크기
+                size: 14, 
               },
               color: '#333',
             },
             grid: {
-              color: '#f0f0f0', // 부드러운 그리드 라인
+              color: '#f0f0f0', 
               lineWidth: 1,
             },
           },
@@ -237,7 +236,7 @@ const Dashboard = () => {
         },
         plugins: {
           legend: {
-            display: false, // 레전드 숨기기
+            display: false, 
           },
         },
         layout: {

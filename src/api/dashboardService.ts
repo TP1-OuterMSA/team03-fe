@@ -26,10 +26,10 @@ export const getCategoryRatings = async (
     },
   });
 
-  const rawData = response.data.data; // { category: string, totalScore: number }[]
+  const rawData = response.data.data; 
 
   const mappedData = rawData.map((item: { category: string; totalScore: number }) => ({
-    category: categoryNameMap[item.category] || item.category, // 혹시 매핑 없는 경우 대비
+    category: categoryNameMap[item.category] || item.category, 
     score: item.totalScore,
   }));
 
@@ -45,7 +45,7 @@ const formattedDate = formatDate(localDate);
 
 export const getSatisfactionRating = async (): Promise<satisfactionRatingData[]> => {
   const response = await api.get<satisfactionRatingResponse>('/api/team3/analytics/statistics', {
-    params: { localDate: formattedDate },  // date 대신 localDate로 수정
+    params: { localDate: formattedDate }, 
   });
 
   const { weekly, monthly } = response.data.data;
