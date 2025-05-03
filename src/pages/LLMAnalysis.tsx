@@ -222,11 +222,81 @@ const ReportBox = styled.div`
 `;
 
 const ReportContainer = styled.div`
-  width: 100%;
-  word-break: break-all;
-  line-height: 1.7;
-  font-size: 1.1rem;
-  overflow-x: auto;
+  /* 보고서 다운로드 pdf css 반영 */
+  font-family: 'Gmarket-Medium', sans-serif;
+  line-height: 1.6;
+  color: #222;
+
+  h1 {
+    color: #333366;
+    font-size: 2rem;
+    margin-top: 1.5em;
+    margin-bottom: 0.7em;
+  }
+  h2 {
+    color: #336699;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+    margin-top: 1.2em;
+    margin-bottom: 0.7em;
+    font-size: 1.5rem;
+  }
+  h3 {
+    color: #5588bb;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    font-size: 1.2rem;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+    font-size: 1rem;
+  }
+  th,
+  td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  blockquote {
+    background: #f9f9f9;
+    border-left: 10px solid #ccc;
+    margin: 1.5em 10px;
+    padding: 0.5em 10px;
+    color: #555;
+  }
+  code {
+    background: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+    font-size: 0.98em;
+  }
+  pre {
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 3px;
+    overflow-x: auto;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+    font-size: 0.98em;
+  }
+  ul,
+  ol {
+    margin: 1em 0 1em 2em;
+  }
+  strong {
+    font-weight: bold;
+  }
+  em {
+    font-style: italic;
+  }
+  p {
+    margin: 0.7em 0;
+  }
 `;
 
 const EmptyMessage = styled.div`
