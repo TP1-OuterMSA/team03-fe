@@ -10,9 +10,10 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { path: '/admin', label: '대시보드', icon: dashboardIcon },
-    { path: '/admin/llm-analysis', label: 'LLM 분석', icon: llmAnalysisIcon },
-    { path: '/admin/menu-ranking', label: '메뉴 랭킹', icon: menuRankingIcon },
+    { path: '/team3/admin', label: '대시보드', icon: dashboardIcon },
+    { path: '/team3/admin/llm-analysis', label: 'LLM 분석', icon: llmAnalysisIcon },
+    { path: '/team3/admin/menu-ranking', label: '메뉴 랭킹', icon: menuRankingIcon },
+    { path: '/team3/admin/wanted-menus', label: '먹고싶은 메뉴', icon: menuRankingIcon },
   ];
 
   return (

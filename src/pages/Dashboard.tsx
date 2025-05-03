@@ -1,25 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Chart from 'chart.js/auto';
-import { satisfactionRatingData, SatisfactionTrendData } from '../interface/dashboard';
-import { getSatisfactionRating, getSatisfactionTrend } from '../api/dashboardService';
+import { satisfactionRatingData, SatisfactionTrendData, CategoryRatingData } from '../interface/dashboard';
+import { getSatisfactionRating, getSatisfactionTrend, getCategoryRatings } from '../api/dashboardService';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const Dashboard = () => {
   const [graphStyle, setGraphStyle] = useState<'Circle' | 'Stick'>('Circle');
   const [trendType, setTrendType] = useState<'weekly' | 'monthly'>('weekly');
-
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  
   const weeklyChartRef = useRef<HTMLCanvasElement>(null!);
   const monthlyChartRef = useRef<HTMLCanvasElement>(null!);
   const trendChartRef = useRef<HTMLCanvasElement>(null);
+  const categoryChartRef = useRef<HTMLCanvasElement>(null);
 
   const weeklyChartInstance = useRef<Chart | null>(null);
   const monthlyChartInstance = useRef<Chart | null>(null);
   const trendChartInstance = useRef<Chart | null>(null);
+  const categoryChartInstance = useRef<Chart | null>(null);
 
   const [weeklyData, setWeeklyData] = useState<satisfactionRatingData | null>(null);
   const [monthlyData, setMonthlyData] = useState<satisfactionRatingData | null>(null);
   const [weeklyTrendData, setWeeklyTrendData] = useState<SatisfactionTrendData | null>(null);
   const [monthlyTrendData, setMonthlyTrendData] = useState<SatisfactionTrendData | null>(null);
+
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [categoryData, setCategoryData] = useState<CategoryRatingData[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +65,25 @@ const Dashboard = () => {
     if (trendType === 'weekly' && weeklyTrendData) createTrendChart(weeklyTrendData);
     if (trendType === 'monthly' && monthlyTrendData) createTrendChart(monthlyTrendData);
   }, [trendType, weeklyTrendData, monthlyTrendData]);
+
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (selectedDates.length !== 2 || !selectedDates[0] || !selectedDates[1]) return;
+      const [start, end] = selectedDates;
+      console.log('Start:', start);
+      console.log('End:', end);
+      try {
+        const data = await getCategoryRatings(start, end);
+        setCategoryData(data);
+        createCategoryChart(data);
+      } catch (err) {
+        console.error('카테고리별 평점 로드 실패:', err);
+      }
+    };
+  
+    fetchCategory();
+  }, [selectedDates]);
+  
 
   const getCurrentMonthAndWeek = () => {
     const now = new Date();
@@ -139,9 +166,162 @@ const Dashboard = () => {
     });
   };
 
+  const createCategoryChart = (data: CategoryRatingData[]) => {
+    if (!categoryChartRef.current) return;
+    const ctx = categoryChartRef.current.getContext('2d');
+    if (!ctx) return;
+  
+    if (categoryChartInstance.current) categoryChartInstance.current.destroy();
+  
+    const backgroundColors = [
+      'rgba(255, 99, 132, 0.2)', 
+      'rgba(54, 162, 235, 0.2)',  
+      'rgba(255, 206, 86, 0.2)', 
+      'rgba(75, 192, 192, 0.2)', 
+      'rgba(153, 102, 255, 0.2)', 
+    ];
+  
+    const borderColors = [
+      'rgba(255, 99, 132, 1)',   
+      'rgba(54, 162, 235, 1)',    
+      'rgba(255, 206, 86, 1)',    
+      'rgba(75, 192, 192, 1)',    
+      'rgba(153, 102, 255, 1)',  
+    ];
+  
+    categoryChartInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.map((d) => d.category),
+        datasets: [
+          {
+            label: '평점',
+            data: data.map((d) => d.score),
+            backgroundColor: backgroundColors, 
+            borderColor: borderColors,     
+            borderWidth: 1,
+            borderRadius: 12, 
+          },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 5,
+            ticks: {
+              font: {
+                size: 14, 
+              },
+              color: '#333',
+            },
+            grid: {
+              color: '#f0f0f0', 
+              lineWidth: 1,
+            },
+          },
+          x: {
+            ticks: {
+              font: {
+                size: 14,
+              },
+              color: '#333',
+            },
+            grid: {
+              display: false,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: false, 
+          },
+        },
+        layout: {
+          padding: {
+            top: 20,
+            left: 20,
+            right: 20,
+          },
+        },
+        animation: {
+          duration: 800,
+          easing: 'easeInOutQuad',
+        },
+      },
+    });
+  };
+  
+  
+
   return (
     <DashboardContainer>
+      <style>
+      {`
+      .react-datepicker {
+        font-size: 16px;
+      }
+
+      .react-datepicker__month-container {
+        width: 360px;
+      }
+
+      .react-datepicker__day {
+        width: 40px;
+        height: 40px;
+        line-height: 2rem;
+      }
+
+      .react-datepicker__header {
+        background-color: #ffffff;
+        border-bottom: 1px solid #ececec;
+      }
+
+      .react-datepicker__day--selected,
+      .react-datepicker__day--range-start,
+      .react-datepicker__day--range-end,
+      .react-datepicker__day--in-range,
+      .react-datepicker__day--in-selecting-range {
+        background: #228be6;
+        border-width: 10%;
+        border-radius: 50px;
+        color: #ffffff;
+      }
+
+      .react-datepicker__day-name,
+      .react-datepicker__day {
+        width: 2.7rem;
+        height: 2.7rem;
+        line-height: 2.7rem;
+      }
+
+      .react-datepicker__header {
+        background-color: #ffffff;
+        border-bottom: 1px solid #ececec;
+      }
+
+      .react-datepicker__day--selected {
+        background: #228be6;
+        border-radius: 50%;
+        color: white;
+      }
+
+      .react-datepicker__month-container {
+        width: 360px;
+      }
+
+      .react-datepicker__day--selected {
+        background: #228be6;
+        color: white;
+      }
+      `}
+    </style>
+
+
       <h1>대시보드</h1>
+
       <RateHeader>
         <Title>주/월간 만족도 통계</Title>
         <StyleToggle>
@@ -181,19 +361,70 @@ const Dashboard = () => {
         </RateHeader>
         <canvas ref={trendChartRef}></canvas>
       </TrendWrapper>
+
+      <CategoryHeader>
+        <CategoryTitle>카테고리별 평점 조회</CategoryTitle>
+        <SelectButton onClick={() => setIsCalendarOpen(!isCalendarOpen)}>📅 날짜 선택</SelectButton>
+        {isCalendarOpen && (
+          <CalendarPopup>
+            <DatePicker
+              selected={selectedDates[0] || null}
+              onChange={(dates: any) => setSelectedDates(dates)}
+              startDate={selectedDates[0]}
+              endDate={selectedDates[1]}
+              selectsRange
+              inline
+              dateFormat="yyyy-MM-dd"
+            />
+          </CalendarPopup>
+        )}
+      </CategoryHeader>
+
+      <CategoryWrapper>
+        <ChartArea>
+          {selectedDates.length === 0 ? (
+            <EmptyMessage>날짜를 선택하세요</EmptyMessage>
+          ) : (
+            <canvas ref={categoryChartRef}></canvas>
+          )}
+        </ChartArea>
+      </CategoryWrapper>
     </DashboardContainer>
   );
 };
 
-const Title = styled.h2`
-  color: #333;
-  font-size: 1.5rem;
+const SelectButton = styled.button`
+  background: #e7f5ff;
+  color:rgba(0, 0, 0, 1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 1.25rem;
+  margin-left: 790px;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+
+  &:hover {
+    border:1px solid #228be6;
+    background: #e7f5ff;
+  }
 `;
 
-const TrendTitle = styled.h2`
-  margin-right: 800px;
-  color: #333;
-  font-size: 1.5rem;
+const CalendarPopup = styled.div`
+  position: absolute;
+  margin-top: 405px;
+  z-index: 100;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-left: 810px;
+`;
+
+const CategoryWrapper = styled.div`
+  margin-top: 1rem;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 `;
 
 const DashboardContainer = styled.div`
@@ -202,11 +433,24 @@ const DashboardContainer = styled.div`
   margin: 0 auto;
 `;
 
+const RateHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 15px;
+`;
+
+const Title = styled.h2`
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+`;
+
 const ChartsWrapper = styled.div`
   display: flex;
   justify-content: space-around;
   gap: 5px;
-  min-width: 500px;
   background: white;
   border-radius: 12px;
   padding: 1rem;
@@ -223,19 +467,6 @@ const ChartContainer = styled.div`
   canvas {
     max-width: 300px;
     max-height: 300px;
-  }
-`;
-
-const RateHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-  margin-bottom: 15px;
-  h1 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
   }
 `;
 
@@ -268,11 +499,46 @@ const TrendWrapper = styled.div`
   }
 `;
 
+const TrendTitle = styled.h2`
+  margin-right: 800px;
+  color: #333;
+  font-size: 1.5rem;
+`;
+
 const TrendToggle = styled.div`
   display: flex;
   background: #f0f0f0;
   border-radius: 20px;
   padding: 4px;
+`;
+
+const CategoryTitle = styled.h2`
+  color: #333;
+  font-size: 1.5rem;
+`;
+
+const CategoryHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: 3rem;
+  gap: 1rem;
+`;
+
+const ChartArea = styled.div`
+  width: 100%;
+  height: 300px;
+  position: relative;
+`;
+
+
+const EmptyMessage = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #999;
+  font-size: 1.2rem;
 `;
 
 export default Dashboard;

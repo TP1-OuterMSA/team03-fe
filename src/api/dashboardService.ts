@@ -4,26 +4,52 @@ import {
   SatisfactionTrendResponse,
   satisfactionRatingData,
   SatisfactionTrendData,
+  CategoryRatingData
 } from '../interface/dashboard';
 
-// 날짜 포맷팅 함수
-const formatDate = (date: Date): string => {
-  return date.toISOString().split('T')[0];  // "2024-04-13" 포맷
+const categoryNameMap: { [key: string]: string } = {
+  RICE: '밥류',
+  SOUP: '국',
+  MAIN_DISH: '메인',
+  SIDE_DISH: '사이드반찬',
+  DESSERT: '디저트',
 };
 
-// 현재 날짜를 'localDate'로 포맷
+export const getCategoryRatings = async (
+  startDate: Date,
+  endDate?: Date
+): Promise<CategoryRatingData[]> => {
+  const response = await api.get('/api/team3/analytics/statistics/category', {
+    params: {
+      startDate: formatDate(startDate),
+      ...(endDate && { endDate: formatDate(endDate) }),
+    },
+  });
+
+  const rawData = response.data.data; 
+
+  const mappedData = rawData.map((item: { category: string; totalScore: number }) => ({
+    category: categoryNameMap[item.category] || item.category, 
+    score: item.totalScore,
+  }));
+
+  return mappedData;
+};
+
+const formatDate = (date: Date): string => {
+  return date.toISOString().split('T')[0]; 
+};
+
 const localDate = new Date();
 const formattedDate = formatDate(localDate);
 
-// 만족도 점수 조회
 export const getSatisfactionRating = async (): Promise<satisfactionRatingData[]> => {
   const response = await api.get<satisfactionRatingResponse>('/api/team3/analytics/statistics', {
-    params: { localDate: formattedDate },  // date 대신 localDate로 수정
+    params: { localDate: formattedDate }, 
   });
 
   const { weekly, monthly } = response.data.data;
 
-  // 점수별로 집계하는 함수
   const aggregateScores = (
     scores: { score: number; count: number }[],
     type: 'weekly' | 'monthly'
@@ -47,7 +73,6 @@ export const getSatisfactionRating = async (): Promise<satisfactionRatingData[]>
   ];
 };
 
-// 만족도 트렌드 조회
 export const getSatisfactionTrend = async (): Promise<{
   weekly: SatisfactionTrendData;
   monthly: SatisfactionTrendData;
@@ -55,14 +80,11 @@ export const getSatisfactionTrend = async (): Promise<{
   const response = await api.get<SatisfactionTrendResponse>(
     '/api/team3/analytics/statistics/tracking',
     {
-      params: { localDate: formattedDate },  // date 대신 localDate로 수정
+      params: { localDate: formattedDate }, 
     }
   );
   console.log(formattedDate);
-  // 주간 라벨 (월~금)
   const weeklyLabels = ['월', '화', '수', '목', '금'];
-
-  // 월간 라벨 (5개월 전부터 1개월 전까지)
   const monthlyLabels = (() => {
     const now = new Date();
     const labels: string[] = [];
