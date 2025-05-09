@@ -44,5 +44,3 @@ export interface CategoryRatingData {
   score: number;
 }
 
-
-

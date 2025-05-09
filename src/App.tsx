@@ -9,6 +9,7 @@ import LLMAnalysis from './pages/LLMAnalysis';
 import WantedMenusPage from './pages/WantedMenusPage';
 import FrequencyMenu from './pages/FrequencyMenu';
 
+
 const App = () => {
   return (
     <ThemeProvider theme={theme}>

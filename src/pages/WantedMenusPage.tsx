@@ -59,7 +59,7 @@ const WantedMenusPage: React.FC = () => {
   return (
     <PageContainer>
       <Title>먹고싶은 메뉴 순위</Title>
-
+      
       <PeriodSelector
         periodCategory={periodCategory}
         selectedPeriod={selectedPeriod}
