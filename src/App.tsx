@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import MenuRanking from './pages/MenuRanking';
 import LLMAnalysis from './pages/LLMAnalysis';
 import WantedMenusPage from './pages/WantedMenusPage';
+import FrequencyMenu from './pages/FrequencyMenu';
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
             <Route path="/team3/admin/menu-ranking" element={<MenuRanking />} />
             <Route path="/team3/admin/llm-analysis" element={<LLMAnalysis />} />
             <Route path="/team3/admin/wanted-menus" element={<WantedMenusPage />} />
+            <Route path="/team3/admin/frequency-menus" element={<FrequencyMenu />} />
           </Routes>
         </Layout>
       </Router>
