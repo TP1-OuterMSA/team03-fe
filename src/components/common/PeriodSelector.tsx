@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import { PeriodSelectorProps } from '../../interface/frequencyMenu';
 import { PeriodType } from '../../interface/wantedMenu';

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import PeriodSelector from '../components/common/PeriodSelector';
 import { PeriodType } from '../interface/wantedMenu';
-import { SelectedPeriod, FrequencyData, Month, getFrequency, ResponseData } from '../api/frequencyMenu';
+import { SelectedPeriod, FrequencyData, Month, getFrequency } from '../api/frequencyMenu';
 import Chart from 'chart.js/auto';
 
 
@@ -132,12 +132,12 @@ function formatFrequencyData(response: ResponseData): FrequencyData {
     ];
   
     const timeout = setTimeout(() => {
-      mapping.forEach(([ref, inst, data, title]) => {
+      mapping.forEach(([ref, inst, data]) => {
         if (!ref.current) return;
         if (graphStyle === 'Line') {
           createLineChart(ref, inst, data);
         } else {
-          createDoughnutChart(ref, inst, data, title.replace('빈도','제공 비율'));
+          createDoughnutChart(ref, inst, data);
         }
       });
     }, 100); 
@@ -256,8 +256,7 @@ function formatFrequencyData(response: ResponseData): FrequencyData {
   const createDoughnutChart = (
     ref: React.RefObject<HTMLCanvasElement | null>,
     chartInstance: React.MutableRefObject<Chart | null>,
-    data: Record<string, number>,
-    title: string
+    data: Record<string, number>
   ) => {
     const ctx = ref.current?.getContext('2d');
     if (!ctx) return;
