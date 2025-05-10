@@ -7,7 +7,7 @@ import Chart from 'chart.js/auto';
 
 
 const frequencyMenu: React.FC = () => {
-  const currentYear = 2023;
+  const currentYear = new Date().getFullYear();
   const [graphStyle, setGraphStyle] = useState<'Line' | 'Percent'>('Line');
   const [items, setItems] = useState<FrequencyData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -151,7 +151,7 @@ function formatFrequencyData(response: ResponseData): FrequencyData {
     WHITE_RICE: '흰쌀밥',
     MIXED_GRAIN_RICE: '잡곡밥',
     FRIED_RICE: '볶음밥',
-    SPECIAL_RICE: '김밥, 주먹밥, 비빔밥 등',
+    SPECIAL_RICE: '김밥, 비빔밥',
   
     MEAT: '육류',
     POULTRY: '가금류',
