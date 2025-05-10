@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import PeriodSelector from '../components/common/PeriodSelector';
 import { DesiredFoodItem, PeriodType } from '../interface/wantedMenu';
 import { getDesiredFoodsByPeriod } from '../api/wantedMenuService';
 
@@ -58,52 +59,13 @@ const WantedMenusPage: React.FC = () => {
   return (
     <PageContainer>
       <Title>먹고싶은 메뉴 순위</Title>
-
-      <PeriodSelectorContainer>
-        <PeriodCategoryTabs>
-          <PeriodCategoryTab $isActive={periodCategory === 'semester'} onClick={() => handleCategoryChange('semester')}>
-            학기별 보기
-          </PeriodCategoryTab>
-          <PeriodCategoryTab $isActive={periodCategory === 'month'} onClick={() => handleCategoryChange('month')}>
-            월별 보기
-          </PeriodCategoryTab>
-        </PeriodCategoryTabs>
-
-        <PeriodOptionsWrapper>
-          {periodCategory === 'semester' ? (
-            <SemesterOptions>
-              <SemesterOption
-                $isActive={selectedPeriod === 'FIRST_SEMESTER'}
-                onClick={() => handlePeriodChange('FIRST_SEMESTER')}
-              >
-                <SemesterTitle>1학기</SemesterTitle>
-                <SemesterPeriod>{currentYear}년 3월 ~ 8월</SemesterPeriod>
-              </SemesterOption>
-              <SemesterOption
-                $isActive={selectedPeriod === 'SECOND_SEMESTER'}
-                onClick={() => handlePeriodChange('SECOND_SEMESTER')}
-              >
-                <SemesterTitle>2학기</SemesterTitle>
-                <SemesterPeriod>
-                  {currentYear}년 9월 ~ {currentYear + 1}년 2월
-                </SemesterPeriod>
-              </SemesterOption>
-            </SemesterOptions>
-          ) : (
-            <MonthOptions>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                <MonthOption
-                  key={month}
-                  $isActive={selectedPeriod === `MONTH_${month}`}
-                  onClick={() => handlePeriodChange(`MONTH_${month}` as PeriodType)}
-                >
-                  {month}월
-                </MonthOption>
-              ))}
-            </MonthOptions>
-          )}
-        </PeriodOptionsWrapper>
-      </PeriodSelectorContainer>
+      
+      <PeriodSelector
+        periodCategory={periodCategory}
+        selectedPeriod={selectedPeriod}
+        onCategoryChange={handleCategoryChange}
+        onPeriodChange={handlePeriodChange}
+      />
 
       <SelectedPeriodDisplay>
         <CalendarIcon>📅</CalendarIcon>
