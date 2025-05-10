@@ -27,7 +27,6 @@ const Dashboard = () => {
   const [monthlyTrendData, setMonthlyTrendData] = useState<SatisfactionTrendData | null>(null);
 
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [categoryData, setCategoryData] = useState<CategoryRatingData[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,7 +73,6 @@ const Dashboard = () => {
       console.log('End:', end);
       try {
         const data = await getCategoryRatings(start, end);
-        setCategoryData(data);
         createCategoryChart(data);
       } catch (err) {
         console.error('카테고리별 평점 로드 실패:', err);
