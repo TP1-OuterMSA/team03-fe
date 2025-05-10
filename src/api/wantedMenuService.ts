@@ -1,6 +1,5 @@
 import { api } from './axios';
 import { DesiredFoodResponse, PeriodType } from '../interface/wantedMenu';
-import { FrequencyData } from '../interface/dashboard';
 
 // 날짜 포맷팅 함수
 const formatDate = (date: Date): string => {
