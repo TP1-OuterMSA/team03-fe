@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import PeriodSelector from '../components/common/PeriodSelector';
 import { PeriodType } from '../interface/wantedMenu';
-
 import { SelectedPeriod, FrequencyData, Month, getFrequency } from '../api/frequencyMenu';
 import Chart from 'chart.js/auto';
 
