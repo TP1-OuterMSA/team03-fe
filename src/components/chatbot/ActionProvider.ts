@@ -10,57 +10,21 @@ class ActionProvider {
         this.setState = setStateFunc;
     }
 
-    handleMealInfo = (message: string) => {
-        this.handleGeneralMessage(message, 'FOOD_INFO');
-    };
-
-    handleFeedback = (message: string) => {
-        this.handleGeneralMessage(message, 'FOOD_FEEDBACK_INFO');
-    };
-
-    handleDefault = (message: string) => {
-        const defaultMessage = this.createChatBotMessage('죄송해요. 아직 그 요청은 이해하지 못했어요.');
-        this.setState((prev: any) => ({
-            ...prev,
-            messages: [...prev.messages, defaultMessage],
-        }));
-    };
-
-    handleCategorySelect = (category: string) => {
-        // 카테고리 선택 처리
-        this.setState((prev: any) => ({
-            ...prev,
-            category: category, // 선택된 카테고리를 상태에 저장
-            messages: [
-                ...prev.messages,
-                this.createChatBotMessage(
-                    `선택하신 카테고리는 ${
-                        category === 'FOOD_INFO' ? '급식 정보' : '급식 피드백'
-                    }입니다. 질문해주세요.`,
-                    {
-                        withAvatar: false,
-                        delay: 500,
-                        widget: undefined,
-                    }
-                ),
-            ],
-        }));
-    };
-
-    handleGeneralMessage = (question: string, category: string) => {
-        // const { category } = this.state;  // Removed: category is now passed as an argument
-        if (!category) {
-            const errorMessage = this.createChatBotMessage(
-                '먼저 급식 정보 또는 급식 피드백 중에서 선택해주세요.'
-            );
-            this.setState((prev: any) => ({
-                ...prev,
-                messages: [...prev.messages, errorMessage],
-            }));
-            return;
-        }
-
-        this.handleApiResponse(category, question);
+    handleGeneralMessage = (question: string) => {
+        this.setState((prevState: any) => {
+            if (!prevState.category) {
+                const errorMessage = this.createChatBotMessage('먼저 급식 정보 또는 급식 피드백 중에서 선택해주세요.');
+                return {
+                    ...prevState,
+                    messages: [...prevState.messages, errorMessage],
+                };
+            }
+            // 즉각적인 피드백 메시지 표시
+            const processingMessage = this.createChatBotMessage('잠시만 기다려주세요...', { delay: 0 });
+            this.setState((prev: any) => ({ ...prev, messages: [...prev.messages, processingMessage] }));
+            this.handleApiResponse(prevState.category, question);
+            return prevState;
+        });
     };
 
     handleApiResponse = (category: string, question: string) => {
@@ -71,45 +35,76 @@ class ActionProvider {
             .post(apiUrl, { category, question })
             .then((response) => {
                 const data = response.data;
-                let answerMessage = data.message || '응답이 없습니다.';
-                let relevantInfo = '';
+                let answerMessage = data.answer || '답변이 없습니다.';
+                answerMessage = answerMessage.replace(/\|n\|n/g, '\n\n').replace(/\\nln/g, '\n');
+                const referenceDocuments = data.relevant_documents;
 
-                if (data.answer) {
-                    answerMessage = data.answer;
-                }
+                const finalMessage = this.createChatBotMessage(answerMessage, {
+                    widget: referenceDocuments && referenceDocuments.length > 0 ? 'referenceDocumentsButton' : undefined,
+                    payload: referenceDocuments,
+                    delay: 0, // 응답 메시지도 즉시 표시
+                });
 
-                if (data.relevant_documents && data.relevant_documents.length > 0) {
-                    relevantInfo = '다음 문서를 참고하여 답변되었습니다:\n\n';
-                    data.relevant_documents.forEach((doc: any) => {
-                        relevantInfo += `-   ${doc.document} (유사도: ${
-                            doc.similarity ? doc.similarity.toFixed(2) : 'N/A'
-                        })\n`;
-                    });
-                }
-
-                const finalMessage = this.createChatBotMessage(answerMessage + '\n' + relevantInfo);
                 this.setState((prev: any) => ({
                     ...prev,
-                    messages: [...prev.messages, finalMessage],
+                    messages: prev.messages.filter((msg: { message: string; }) => msg.message !== '잠시만 기다려주세요...').concat([finalMessage, this.createChatBotMessage('더 궁금한 것이 있으신가요?', { widget: 'endOptions', delay: 0 })]),
                 }));
             })
             .catch((error) => {
-                let errorMessage = '오류가 발생했습니다.';
-                if (error.response) {
-                    errorMessage = `오류: ${error.response.status} - ${
-                        error.response.data.message || '서버 오류'
-                    }`;
-                } else if (error.request) {
-                    errorMessage = '요청에 실패했습니다. 네트워크 연결을 확인해주세요.';
-                } else {
-                    errorMessage = `오류: ${error.message}`;
-                }
-                const errorMessageObj = this.createChatBotMessage(errorMessage);
+                const errorMessage = this.createChatBotMessage(`오류가 발생했습니다: ${error.message}`, { delay: 0 });
                 this.setState((prev: any) => ({
                     ...prev,
-                    messages: [...prev.messages, errorMessageObj],
+                    messages: prev.messages.filter((msg: { message: string; }) => msg.message !== '잠시만 기다려주세요...').concat([errorMessage]),
                 }));
             });
+    };
+
+    handleCategorySelect = (category: string) => {
+        this.setState((prevState: any) => ({
+            ...prevState,
+            category: category,
+            messages: [
+                ...prevState.messages,
+                this.createChatBotMessage(
+                    `선택하신 카테고리는 ${
+                        category === 'FOOD_INFO' ? '급식 정보' : '급식 피드백'
+                    }입니다. 질문해주세요.`,
+                    { withAvatar: false, delay: 0, widget: undefined }
+                ),
+            ],
+        }));
+    };
+
+    handleEndChat = () => {
+        this.setState((prev: any) => ({
+            ...prev,
+            messages: [...prev.messages, this.createChatBotMessage('종료되었습니다.', { delay: 0 })],
+        }));
+    };
+
+    handleNewQuestion = () => {
+        this.setState((prev: any) => ({
+            ...prev,
+            category: null,
+            messages: [
+                ...prev.messages,
+                this.createChatBotMessage('새로운 질문을 시작합니다. 아래 카테고리 중 하나를 선택해주세요:', {
+                    delay: 0,
+                    widget: 'foodOptions',
+                }),
+            ],
+        }));
+    };
+
+    handleShowReferences = (references: any[]) => {
+        let referenceText = '참고 문헌:\n\n';
+        references.forEach((ref, index) => {
+            referenceText += `- ${ref.document} (유사도: ${ref.similarity ? ref.similarity.toFixed(2) : 'N/A'})\n`;
+        });
+        this.setState((prev: any) => ({
+            ...prev,
+            messages: [...prev.messages, this.createChatBotMessage(referenceText, { delay: 0 })],
+        }));
     };
 }
 

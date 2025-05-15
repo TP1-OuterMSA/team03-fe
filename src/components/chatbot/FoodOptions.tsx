@@ -1,18 +1,24 @@
 import React from 'react';
 
-const FoodOptions = (props: any) => {
-    const handleClick = (type: 'meal' | 'feedback') => {
-        if (type === 'meal') {
-            props.actionProvider.handleMealInfo(type);
-        } else if (type === 'feedback') {
-            props.actionProvider.handleFeedback(type);
-        }
+interface FoodOptionsProps {
+    actionProvider: {
+        handleCategorySelect: (category: 'FOOD_INFO' | 'FOOD_FEEDBACK_INFO') => void;
+    };
+}
+
+const FoodOptions: React.FC<FoodOptionsProps> = (props) => {
+    const handleMealClick = () => {
+        props.actionProvider.handleCategorySelect('FOOD_INFO');
+    };
+
+    const handleFeedbackClick = () => {
+        props.actionProvider.handleCategorySelect('FOOD_FEEDBACK_INFO');
     };
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button onClick={() => handleClick('meal')}>🍱 급식 정보</button>
-            <button onClick={() => handleClick('feedback')}>📝 급식 피드백</button>
+            <button onClick={handleMealClick}>🍱 급식 정보</button>
+            <button onClick={handleFeedbackClick}>📝 급식 피드백</button>
         </div>
     );
 };
