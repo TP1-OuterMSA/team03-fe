@@ -1,4 +1,3 @@
-import { createChatBotMessage } from 'react-chatbot-kit';
 import axios from 'axios';
 
 class ActionProvider {
@@ -97,7 +96,7 @@ class ActionProvider {
 
   handleShowReferences = (references: any[]) => {
     let referenceText = '참고 문헌:\n\n';
-    references.forEach((ref, index) => {
+    references.forEach((ref) => {
       referenceText += `- ${ref.document} (유사도: ${ref.similarity ? ref.similarity.toFixed(2) : 'N/A'})\n`;
     });
     this.setState((prev: any) => ({

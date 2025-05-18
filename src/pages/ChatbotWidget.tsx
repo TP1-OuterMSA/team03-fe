@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react'; 
 import Chatbot from 'react-chatbot-kit';
 import 'react-chatbot-kit/build/main.css';
 import { Bot, X } from 'lucide-react';
