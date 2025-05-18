@@ -48,13 +48,11 @@ const ChatbotCloseButton = styled.button`
 `;
 
 const ChatbotContentWrapper = styled.div`
-  overflow-y: auto;
   padding: 0;
   margin: 0;
   width: 100%;
   box-sizing: border-box;
 
-  /* react-chatbot-kit 기본 스타일 덮어쓰기 (오른쪽 여백 제거) */
   .react-chatbot-kit-chat-container {
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -71,6 +69,23 @@ const ChatbotContentWrapper = styled.div`
   .react-chatbot-kit-chat-message-container {
     margin: 0 !important;
     padding: 8px !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex-direction: column;
+    align-items: flex-start;
+
+    &::-webkit-scrollbar {
+      width: 6px; 
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2); 
+      border-radius: 3px; 
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
   }
 
   .react-chatbot-kit-chat-input-container {
@@ -79,7 +94,7 @@ const ChatbotContentWrapper = styled.div`
   }
 
   .react-chatbot-kit-chat-header {
-    display: none !important; /* react-chatbot-kit 기본 헤더 제거 */
+    display: none !important;
   }
 
   .react-chatbot-kit-chat-wrapper {
@@ -97,8 +112,14 @@ const ChatbotContentWrapper = styled.div`
     margin-right: 0 !important;
   }
 
-  .react-chatbot-kit-bot-chat-message {
-    margin-right: 0 !important;
+  .react-chatbot-kit-chat-bot-message {
+    margin-left: 0 !important;
+  }
+
+  .react-chatbot-kit-chat-input::placeholder { /* 플레이스홀더 스타일 */
+    color: #333; /* 플레이스홀더 텍스트 색상 */
+    opacity: 1; /* 플레이스홀더 투명도 (기본값) */
+    content: "답변을 입력하세요"; /* 플레이스홀더 텍스트 변경 (일부 브라우저 지원) */
   }
 
   .react-chatbot-kit-chat-scroll-container {
@@ -150,7 +171,7 @@ const ChatbotWidget = () => {
                 actionProvider={ActionProvider}
               />
             </div>
-          </ChatbotContentWrapper>
+          </ChatbotContentWrapper>        
         </ChatbotOpenWrapper>
       )}
       {!isOpen && (
