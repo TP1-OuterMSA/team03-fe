@@ -1,5 +1,5 @@
 import { api } from './axios';
-import { Report, ReportListResponse } from '../interface/report';
+import { Report } from '../interface/report';
 
 const baseURL = import.meta.env.VITE_API_URL;
 

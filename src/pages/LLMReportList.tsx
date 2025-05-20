@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { getAllReports, downloadReportFile } from '../api/reportService';
 import { Report } from '../interface/report';
-import { format, isValid } from 'date-fns';
-import { ko } from 'date-fns/locale';
 
 const LLMReportList = () => {
   const navigate = useNavigate();
@@ -38,18 +36,6 @@ const LLMReportList = () => {
 
   const handleReportClick = (reportId: number) => {
     navigate(`/team3/admin/llm-report/${reportId}`);
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      if (!isValid(date)) {
-        return '날짜 정보 없음';
-      }
-      return format(date, 'yyyy년 MM월 dd일 HH:mm', { locale: ko });
-    } catch (error) {
-      return '날짜 정보 없음';
-    }
   };
 
   return (
