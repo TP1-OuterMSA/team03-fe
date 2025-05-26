@@ -10,6 +10,10 @@ import WantedMenusPage from './pages/WantedMenusPage';
 import FrequencyMenu from './pages/FrequencyMenu';
 import LLMReportList from './pages/LLMReportList';
 import LLMReportDetail from './pages/LLMReportDetail';
+import Suggestion from './pages/Suggestion';
+import SuggestionDetail from './pages/SuggestionDetail';
+import FoodAnalyzePage from './pages/FoodAnalyze';
+import FoodAnalyzeDetailPage from './pages/FoodAnalyzeDetail';
 
 const App = () => {
   return (
@@ -25,6 +29,10 @@ const App = () => {
             <Route path="/team3/admin/llm-report/:id" element={<LLMReportDetail />} />
             <Route path="/team3/admin/wanted-menus" element={<WantedMenusPage />} />
             <Route path="/team3/admin/frequency-menus" element={<FrequencyMenu />} />
+            <Route path="/team3/admin/suggestion" element={<Suggestion />} />
+            <Route path="/team3/admin/suggestion/:id" element={<SuggestionDetail />} />
+            <Route path="/team3/admin/food-analyze" element={<FoodAnalyzePage />} />
+            <Route path="/team3/admin/food-analyze/:id" element={<FoodAnalyzeDetailPage />} />
           </Routes>
         </Layout>
       </Router>
