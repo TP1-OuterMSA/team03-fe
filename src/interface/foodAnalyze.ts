@@ -20,6 +20,7 @@ export interface FoodScore {
   start_date: string;
   end_date: string;
   scores: number[];
+  dates: string[];
 }
 
 export interface FoodEvaluationSummary {

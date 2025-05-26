@@ -16,14 +16,15 @@ const SuggestionPage = () => {
     nickName: '',
     category: 'RICE' as SuggestionCategory,
     content: '',
+    foodName: '',
   });
 
   const categories: { value: SuggestionCategory; label: string }[] = [
     { value: 'RICE', label: '밥' },
-    { value: 'MAIN', label: '메인 반찬' },
-    { value: 'SIDE', label: '사이드 반찬' },
-    { value: 'SOUP', label: '국' },
-    { value: 'ETC', label: '기타' },
+    { value: 'MAIN_DISH', label: '메인 반찬' },
+    { value: 'SIDE_DISH', label: '사이드 반찬' },
+    { value: 'DESSERT', label: '디저트'},
+    { value: 'SOUP', label: '국' }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,9 +35,9 @@ const SuggestionPage = () => {
         nickName: formData.nickName,
         category: formData.category,
         content: formData.content,
-        foodId: 0
+        foodName: formData.foodName
       };
-      
+            
       await suggestionService.createSuggestion(submitData);
       setShowCreateForm(false);
       setFormData({
@@ -44,10 +45,17 @@ const SuggestionPage = () => {
         nickName: '',
         category: 'RICE',
         content: '',
+        foodName: '',
       });
+      alert('건의가 성공적으로 등록되었습니다.');
       fetchSuggestions();
-    } catch (error) {
+    } catch (error: any) {
       console.error('건의 등록 실패:', error);
+      console.error('에러 상세:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       alert('건의 등록에 실패했습니다. 다시 시도해주세요.');
     }
   };
@@ -103,6 +111,12 @@ const SuggestionPage = () => {
             placeholder="닉네임 (선택)"
             value={formData.nickName}
             onChange={(e) => setFormData({ ...formData, nickName: e.target.value })}
+          />
+          <Input
+            type="text"
+            placeholder="음식 이름"
+            value={formData.foodName}
+            onChange={(e) => setFormData({ ...formData, foodName: e.target.value })}
           />
           <Select
             value={formData.category}

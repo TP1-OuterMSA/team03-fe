@@ -16,6 +16,7 @@ const SuggestionDetailPage = () => {
     nickName: '',
     category: 'RICE' as SuggestionCategory,
     content: '',
+    foodName: '',
   });
 
   const categories: { value: SuggestionCategory; label: string }[] = [
@@ -41,6 +42,7 @@ const SuggestionDetailPage = () => {
         nickName: data.nickName || '',
         category: data.category,
         content: data.content,
+        foodName: data.foodName || '',
       });
       setError(null);
     } catch (error) {
@@ -63,6 +65,7 @@ const SuggestionDetailPage = () => {
         nickName: suggestion.nickName || '',
         category: suggestion.category,
         content: suggestion.content,
+        foodName: suggestion.foodName,
       });
     }
   };
@@ -148,6 +151,12 @@ const SuggestionDetailPage = () => {
             value={editForm.nickName}
             onChange={(e) => setEditForm({ ...editForm, nickName: e.target.value })}
           />
+          <Input
+            type="text"
+            placeholder="음식 이름 (선택)"
+            value={editForm.foodName}
+            onChange={(e) => setEditForm({ ...editForm, foodName: e.target.value })}
+          />
           <Select
             value={editForm.category}
             onChange={(e) => setEditForm({ ...editForm, category: e.target.value as SuggestionCategory })}
@@ -177,6 +186,12 @@ const SuggestionDetailPage = () => {
                 <Label>카테고리</Label>
                 <Value>{categories.find(c => c.value === suggestion.category)?.label}</Value>
               </InfoItem>
+              {suggestion.foodName && (
+                <InfoItem>
+                  <Label>음식</Label>
+                  <Value>{suggestion.foodName}</Value>
+                </InfoItem>
+              )}
               <InfoItem>
                 <Label>작성일</Label>
                 <Value>{suggestion.createAt}</Value>

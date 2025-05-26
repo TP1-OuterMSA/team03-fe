@@ -23,6 +23,7 @@ const FoodAnalyzeDetailPage = () => {
   const [evaluationSummary, setEvaluationSummary] = useState<FoodEvaluationSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange>(() => {
     const now = new Date();
     const thirtyDaysAgo = new Date();
@@ -58,9 +59,7 @@ const FoodAnalyzeDetailPage = () => {
       chartInstance.current.destroy();
     }
 
-    const labels = Array.from({ length: foodScores.scores.length }, (_, i) => 
-      new Date(new Date(foodScores.start_date).getTime() + i * 24 * 60 * 60 * 1000).toLocaleDateString()
-    );
+    const labels = Array.from({ length: foodScores.scores.length }, (_, i) => (i + 1).toString());
 
     chartInstance.current = new Chart(ctx, {
       type: 'line',
@@ -78,7 +77,22 @@ const FoodAnalyzeDetailPage = () => {
       options: {
         responsive: true,
         plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, max: 5 } }
+        scales: { 
+          y: { 
+            beginAtZero: true, 
+            max: 5,
+            title: {
+              display: true,
+              text: '평점'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: '숫자'
+            }
+          }
+        }
       }
     });
   };
@@ -86,23 +100,35 @@ const FoodAnalyzeDetailPage = () => {
   const fetchFoodData = async (foodId: number) => {
     try {
       setLoading(true);
-      const [info, count, scores, summary] = await Promise.all([
+      const [info, count, scores] = await Promise.all([
         foodAnalyzeService.getFoodInfo(foodId),
         foodAnalyzeService.getFoodCount(foodId, dateRange),
-        foodAnalyzeService.getFoodScores(foodId, dateRange),
-        foodAnalyzeService.getFoodEvaluationSummary(foodId, dateRange)
+        foodAnalyzeService.getFoodScores(foodId, dateRange)
       ]);
 
       setFoodInfo(info);
       setFoodCount(count);
       setFoodScores(scores);
-      setEvaluationSummary(summary);
       setError(null);
     } catch (error) {
       console.error('음식 데이터 조회 실패:', error);
       setError('음식 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFeedback = async () => {
+    if (!id) return;
+    try {
+      setIsLoadingFeedback(true);
+      const summary = await foodAnalyzeService.getFoodEvaluationSummary(parseInt(id), dateRange);
+      setEvaluationSummary(summary);
+    } catch (error) {
+      console.error('피드백 요약 조회 실패:', error);
+      setError('피드백 요약을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoadingFeedback(false);
     }
   };
 
@@ -208,16 +234,27 @@ const FoodAnalyzeDetailPage = () => {
       <Section>
         <SectionTitle>피드백 요약</SectionTitle>
         <ReportBox>
-          {evaluationSummary?.error ? (
+          {!evaluationSummary ? (
+            <FeedbackButton onClick={fetchFeedback} disabled={isLoadingFeedback}>
+              {isLoadingFeedback ? (
+                <LoadingWrapper>
+                  <Spinner />
+                  <span>피드백 분석 중...</span>
+                </LoadingWrapper>
+              ) : (
+                '피드백 분석 받기'
+              )}
+            </FeedbackButton>
+          ) : evaluationSummary.error ? (
             <ErrorMessage>{evaluationSummary.error}</ErrorMessage>
           ) : (
             <ReportContainer>
               <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                {evaluationSummary?.summary || '피드백이 없습니다.'}
+                {evaluationSummary.summary || '피드백이 없습니다.'}
               </ReactMarkdown>
               <SummaryFooter>
                 <TotalFeedbacks>
-                  총 {evaluationSummary?.evaluationCount || 0}개의 피드백
+                  총 {evaluationSummary.evaluationCount || 0}개의 피드백
                 </TotalFeedbacks>
               </SummaryFooter>
             </ReportContainer>
@@ -371,7 +408,6 @@ const ReportContainer = styled.div`
   font-family: 'Gmarket-Medium', sans-serif;
   line-height: 1.6;
   color: #222;
-  width: 100%;
 
   h1 {
     color: #333366;
@@ -489,6 +525,41 @@ const Spinner = styled.div`
 const ErrorMessage = styled.div`
   color: #fa5252;
   margin: 1rem 0;
+`;
+
+const LoadingWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const FeedbackButton = styled.button`
+  padding: 1rem 2rem;
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  max-width: 300px;
+  margin: 2rem auto;
+  display: block;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    background-color: ${({ theme }) => theme.colors.text.secondary};
+    cursor: not-allowed;
+  }
 `;
 
 export default FoodAnalyzeDetailPage; 
