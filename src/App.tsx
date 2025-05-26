@@ -10,6 +10,7 @@ import WantedMenusPage from './pages/WantedMenusPage';
 import FrequencyMenu from './pages/FrequencyMenu';
 import LLMReportList from './pages/LLMReportList';
 import LLMReportDetail from './pages/LLMReportDetail';
+import CreateMenu from './pages/CreateMenu';
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
             <Route path="/team3/admin/llm-report/:id" element={<LLMReportDetail />} />
             <Route path="/team3/admin/wanted-menus" element={<WantedMenusPage />} />
             <Route path="/team3/admin/frequency-menus" element={<FrequencyMenu />} />
+            <Route path="/team3/admin/create-menu" element={<CreateMenu />} />
           </Routes>
         </Layout>
       </Router>
