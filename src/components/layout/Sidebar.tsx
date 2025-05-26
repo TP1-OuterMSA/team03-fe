@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 // icon
 import dashboardIcon from '../../assets/images/sidebar/dashboard.png';
 import llmAnalysisIcon from '../../assets/images/sidebar/llm-anaylsis.png';
+import llmReportListIcon from '../../assets/images/sidebar/report.png';
 import menuRankingIcon from '../../assets/images/sidebar/menu-ranking.png';
 
 const Sidebar = () => {
@@ -13,6 +14,7 @@ const Sidebar = () => {
     { path: '/team3/admin', label: '대시보드', icon: dashboardIcon },
     { path: '/team3/admin/frequency-menus', label: '메뉴 빈도', icon: dashboardIcon },
     { path: '/team3/admin/llm-analysis', label: 'LLM 분석', icon: llmAnalysisIcon },
+    { path: '/team3/admin/llm-report-list', label: 'LLM 보고서 목록', icon: llmReportListIcon },
     { path: '/team3/admin/menu-ranking', label: '메뉴 랭킹', icon: menuRankingIcon },
     { path: '/team3/admin/wanted-menus', label: '먹고싶은 메뉴', icon: menuRankingIcon },
   ];
