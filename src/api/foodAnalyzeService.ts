@@ -1,6 +1,5 @@
-import axios from 'axios';
+import { api } from './axios';
 import { 
-  ApiResponse, 
   Food, 
   FoodCount, 
   FoodInfo, 
@@ -15,7 +14,7 @@ export const foodAnalyzeService = {
   // 모든 음식 목록 조회
   getAllFoods: async (): Promise<Food[]> => {
     try {
-      const response = await axios.get(`${BASE_URL}/food-analyze/get-all-foods`);
+      const response = await api.get(`${BASE_URL}/food-analyze/get-all-foods`);
       return response.data;
     } catch (error) {
       console.error('음식 목록 조회 실패:', error);
@@ -26,7 +25,7 @@ export const foodAnalyzeService = {
   // 음식 상세 정보 조회
   getFoodInfo: async (foodId: number): Promise<FoodInfo> => {
     try {
-      const response = await axios.post(`${BASE_URL}/food-analyze/get-food-info`, {
+      const response = await api.post(`${BASE_URL}/food-analyze/get-food-info`, {
         food_id: foodId
       });
       return response.data;
@@ -39,7 +38,7 @@ export const foodAnalyzeService = {
   // 특정 기간 동안의 음식 출현 횟수 조회
   getFoodCount: async (foodId: number, dateRange: DateRange): Promise<FoodCount> => {
     try {
-      const response = await axios.post(`${BASE_URL}/food-analyze/get-food-count`, {
+      const response = await api.post(`${BASE_URL}/food-analyze/get-food-count`, {
         food_id: foodId,
         start_date: dateRange.startDate,
         end_date: dateRange.endDate
@@ -54,7 +53,7 @@ export const foodAnalyzeService = {
   // 특정 기간 동안의 음식 평점 조회
   getFoodScores: async (foodId: number, dateRange: DateRange): Promise<FoodScore> => {
     try {
-      const response = await axios.post(`${BASE_URL}/food-analyze/get-food-scores`, {
+      const response = await api.post(`${BASE_URL}/food-analyze/get-food-scores`, {
         food_id: foodId,
         start_date: dateRange.startDate,
         end_date: dateRange.endDate
@@ -69,7 +68,7 @@ export const foodAnalyzeService = {
   // 음식 피드백 요약 조회
   getFoodEvaluationSummary: async (foodId: number, dateRange: DateRange): Promise<FoodEvaluationSummary> => {
     try {
-      const response = await axios.post(`${BASE_URL}/food-analyze/get-food-evaluation-summary`, {
+      const response = await api.post(`${BASE_URL}/food-analyze/get-food-evaluation-summary`, {
         food_id: foodId,
         start_date: dateRange.startDate,
         end_date: dateRange.endDate

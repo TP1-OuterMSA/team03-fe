@@ -33,11 +33,4 @@ export interface FoodEvaluationSummary {
 export interface DateRange {
   startDate: string;
   endDate: string;
-}
-
-export interface ApiResponse<T> {
-  httpStatusCode: number;
-  message: string;
-  data: T;
-  resultType: string;
 } 
