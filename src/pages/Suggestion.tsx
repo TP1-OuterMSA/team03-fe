@@ -23,7 +23,7 @@ const SuggestionPage = () => {
     { value: 'RICE', label: '밥' },
     { value: 'MAIN_DISH', label: '메인 반찬' },
     { value: 'SIDE_DISH', label: '사이드 반찬' },
-    { value: 'DESSERT', label: '디저트'},
+    { value: 'DESSERT', label: '디저트' },
     { value: 'SOUP', label: '국' }
   ];
 
