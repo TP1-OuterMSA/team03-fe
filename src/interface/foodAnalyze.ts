@@ -1,9 +1,12 @@
 export interface Food {
   id: number;
   name: string;
+  category: string;
+  subCategory: string | null;
 }
 
 export interface FoodInfo {
+  id: number;
   name: string;
   nutrition: string;
   calorie: number;

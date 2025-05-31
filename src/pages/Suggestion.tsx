@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Suggestion, SuggestionCategory } from '../interface/suggestion';
 import { suggestionService } from '../api/suggestionService';
+import { foodAnalyzeService } from '../api/foodAnalyzeService';
+import { Food } from '../interface/foodAnalyze';
 
 const SuggestionPage = () => {
   const navigate = useNavigate();
@@ -11,12 +13,13 @@ const SuggestionPage = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [foods, setFoods] = useState<Food[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     nickName: '',
     category: 'RICE' as SuggestionCategory,
     content: '',
-    foodName: '',
+    foodId: 0,
   });
 
   const categories: { value: SuggestionCategory; label: string }[] = [
@@ -27,6 +30,20 @@ const SuggestionPage = () => {
     { value: 'SOUP', label: '국' }
   ];
 
+  const fetchFoods = async () => {
+    try {
+      const response = await foodAnalyzeService.getAllFoods();
+      setFoods(response);
+    } catch (error) {
+      console.error('음식 목록 조회 실패:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSuggestions();
+    fetchFoods();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -35,7 +52,7 @@ const SuggestionPage = () => {
         nickName: formData.nickName,
         category: formData.category,
         content: formData.content,
-        foodName: formData.foodName
+        foodId: formData.foodId
       };
             
       await suggestionService.createSuggestion(submitData);
@@ -45,7 +62,7 @@ const SuggestionPage = () => {
         nickName: '',
         category: 'RICE',
         content: '',
-        foodName: '',
+        foodId: 0,
       });
       alert('건의가 성공적으로 등록되었습니다.');
       fetchSuggestions();
@@ -79,9 +96,15 @@ const SuggestionPage = () => {
     navigate(`/team3/admin/suggestion/${suggestionId}`);
   };
 
-  useEffect(() => {
-    fetchSuggestions();
-  }, []);
+  // 음식을 카테고리별로 그룹화
+  const groupedFoods = foods.reduce((acc, food) => {
+    const category = food.category || '기타';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(food);
+    return acc;
+  }, {} as Record<string, Food[]>);
 
   const filteredSuggestions = selectedCategory === 'ALL'
     ? suggestions
@@ -112,20 +135,26 @@ const SuggestionPage = () => {
             value={formData.nickName}
             onChange={(e) => setFormData({ ...formData, nickName: e.target.value })}
           />
-          <Input
-            type="text"
-            placeholder="음식 이름"
-            value={formData.foodName}
-            onChange={(e) => setFormData({ ...formData, foodName: e.target.value })}
-          />
           <Select
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value as SuggestionCategory })}
+            value={formData.foodId}
+            onChange={(e) => {
+              const selectedFood = foods.find(food => food.id === parseInt(e.target.value));
+              setFormData({
+                ...formData,
+                foodId: selectedFood?.id || 0,
+                category: selectedFood?.category as SuggestionCategory || 'RICE'
+              });
+            }}
           >
-            {categories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
+            <option value="0">음식을 선택하세요</option>
+            {Object.entries(groupedFoods).map(([category, foods]) => (
+              <optgroup key={category} label={category}>
+                {foods.map(food => (
+                  <option key={food.id} value={food.id}>
+                    {food.name}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </Select>
           <TextArea
@@ -175,6 +204,14 @@ const SuggestionPage = () => {
                 </SuggestionMeta>
               </SuggestionHeader>
               <SuggestionContent>{suggestion.content}</SuggestionContent>
+              {suggestion.foodId > 0 && (
+                <FoodInfo>
+                  <Label>관련 음식:</Label>
+                  <Value>
+                    {foods.find(food => food.id === suggestion.foodId)?.name || '알 수 없음'}
+                  </Value>
+                </FoodInfo>
+              )}
             </SuggestionCard>
           ))}
         </SuggestionList>
@@ -343,6 +380,24 @@ const EmptyMessage = styled.div`
   color: #999;
   font-size: 1.1rem;
   margin-top: 2rem;
+`;
+
+const FoodInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const Label = styled.span`
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Value = styled.span`
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 export default SuggestionPage; 

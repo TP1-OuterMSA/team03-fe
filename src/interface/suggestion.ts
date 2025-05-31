@@ -1,3 +1,5 @@
+import { SuggestionAnswer } from './suggestionAnswer';
+
 export type SuggestionCategory = 'RICE' | 'MAIN_DISH' | 'SIDE_DISH' | 'DESSERT' | 'SOUP';
 
 export interface Suggestion {
@@ -6,8 +8,10 @@ export interface Suggestion {
   nickName: string | null;
   category: SuggestionCategory;
   content: string;
-  createAt: string;
+  foodId: number;
   foodName: string;
+  answers: SuggestionAnswer[];
+  createAt: string;
 }
 
 export interface CreateSuggestionRequest {
@@ -15,7 +19,7 @@ export interface CreateSuggestionRequest {
   nickName: string | null;
   category: SuggestionCategory;
   content: string;
-  foodName: string;
+  foodId: number;
 }
 
 export interface ApiResponse<T> {

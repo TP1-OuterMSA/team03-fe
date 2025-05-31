@@ -18,7 +18,9 @@ const Sidebar = () => {
     { path: '/team3/admin/menu-ranking', label: '메뉴 랭킹', icon: menuRankingIcon },
     { path: '/team3/admin/wanted-menus', label: '먹고싶은 메뉴', icon: menuRankingIcon },
     { path: '/team3/admin/suggestion', label: '건의함', icon: menuRankingIcon },
+    { path: '/team3/admin/suggestion-answer', label: '건의함 답변', icon: menuRankingIcon },
     { path: '/team3/admin/food-analyze', label: '음식 통계', icon: menuRankingIcon },
+    { path: '/team3/admin/goals', label: '목표 관리', icon: menuRankingIcon },
   ];
 
   return (
