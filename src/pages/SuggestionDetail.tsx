@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Suggestion, SuggestionCategory } from '../interface/suggestion';
 import { suggestionService } from '../api/suggestionService';
+import { foodAnalyzeService } from '../api/foodAnalyzeService';
+import { Food } from '../interface/foodAnalyze';
 
 const SuggestionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,12 +13,13 @@ const SuggestionDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [foods, setFoods] = useState<Food[]>([]);
   const [editForm, setEditForm] = useState({
     title: '',
     nickName: '',
     category: 'RICE' as SuggestionCategory,
     content: '',
-    foodName: '',
+    foodId: 0,
   });
 
   const categories: { value: SuggestionCategory; label: string }[] = [
@@ -29,7 +32,17 @@ const SuggestionDetailPage = () => {
 
   useEffect(() => {
     fetchSuggestionDetail();
+    fetchFoods();
   }, [id]);
+
+  const fetchFoods = async () => {
+    try {
+      const response = await foodAnalyzeService.getAllFoods();
+      setFoods(response);
+    } catch (error) {
+      console.error('음식 목록 조회 실패:', error);
+    }
+  };
 
   const fetchSuggestionDetail = async () => {
     try {
@@ -42,7 +55,7 @@ const SuggestionDetailPage = () => {
         nickName: data.nickName || '',
         category: data.category,
         content: data.content,
-        foodName: data.foodName || '',
+        foodId: data.foodId,
       });
       setError(null);
     } catch (error) {
@@ -65,7 +78,7 @@ const SuggestionDetailPage = () => {
         nickName: suggestion.nickName || '',
         category: suggestion.category,
         content: suggestion.content,
-        foodName: suggestion.foodName,
+        foodId: suggestion.foodId,
       });
     }
   };
@@ -74,16 +87,43 @@ const SuggestionDetailPage = () => {
     e.preventDefault();
     try {
       if (!id) return;
-      await suggestionService.updateSuggestion(parseInt(id), {
-        ...editForm,
+      
+      // 데이터 형식 검증
+      if (!editForm.title.trim()) {
+        alert('제목을 입력해주세요.');
+        return;
+      }
+      if (!editForm.content.trim()) {
+        alert('내용을 입력해주세요.');
+        return;
+      }
+      if (!editForm.foodId || editForm.foodId === 0) {
+        alert('음식을 선택해주세요.');
+        return;
+      }
+
+      const requestData = {
+        title: editForm.title.trim(),
         nickName: editForm.nickName.trim() || null,
-      });
+        category: editForm.category,
+        content: editForm.content.trim(),
+        foodId: editForm.foodId
+      };
+
+      console.log('수정 요청 데이터:', requestData);
+      
+      await suggestionService.updateSuggestion(parseInt(id), requestData);
       await fetchSuggestionDetail();
       setIsEditing(false);
       alert('건의가 수정되었습니다.');
-    } catch (error) {
+    } catch (error: any) {
       console.error('건의 수정 실패:', error);
-      alert('건의 수정에 실패했습니다. 다시 시도해주세요.');
+      console.error('에러 상세:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      alert('음식을 선택해주세요.');
     }
   };
 
@@ -100,6 +140,16 @@ const SuggestionDetailPage = () => {
       }
     }
   };
+
+  // 음식을 카테고리별로 그룹화
+  const groupedFoods = foods.reduce((acc, food) => {
+    const category = food.category || '기타';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(food);
+    return acc;
+  }, {} as Record<string, Food[]>);
 
   if (loading) {
     return (
@@ -151,20 +201,26 @@ const SuggestionDetailPage = () => {
             value={editForm.nickName}
             onChange={(e) => setEditForm({ ...editForm, nickName: e.target.value })}
           />
-          <Input
-            type="text"
-            placeholder="음식 이름 (선택)"
-            value={editForm.foodName}
-            onChange={(e) => setEditForm({ ...editForm, foodName: e.target.value })}
-          />
           <Select
-            value={editForm.category}
-            onChange={(e) => setEditForm({ ...editForm, category: e.target.value as SuggestionCategory })}
+            value={editForm.foodId}
+            onChange={(e) => {
+              const selectedFood = foods.find(food => food.id === parseInt(e.target.value));
+              setEditForm({
+                ...editForm,
+                foodId: selectedFood?.id || 0,
+                category: selectedFood?.category as SuggestionCategory || 'RICE'
+              });
+            }}
           >
-            {categories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
+            <option value="0">음식을 선택하세요</option>
+            {Object.entries(groupedFoods).map(([category, foods]) => (
+              <optgroup key={category} label={category}>
+                {foods.map(food => (
+                  <option key={food.id} value={food.id}>
+                    {food.name}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </Select>
           <TextArea
@@ -179,6 +235,10 @@ const SuggestionDetailPage = () => {
           <InfoSection>
             <InfoCard>
               <InfoItem>
+                <Label>음식 이름</Label>
+                <Value>{suggestion.foodName}</Value>
+              </InfoItem>
+              <InfoItem>
                 <Label>작성자</Label>
                 <Value>{suggestion.nickName || '익명'}</Value>
               </InfoItem>
@@ -186,12 +246,6 @@ const SuggestionDetailPage = () => {
                 <Label>카테고리</Label>
                 <Value>{categories.find(c => c.value === suggestion.category)?.label}</Value>
               </InfoItem>
-              {suggestion.foodName && (
-                <InfoItem>
-                  <Label>음식</Label>
-                  <Value>{suggestion.foodName}</Value>
-                </InfoItem>
-              )}
               <InfoItem>
                 <Label>작성일</Label>
                 <Value>{suggestion.createAt}</Value>
@@ -205,6 +259,24 @@ const SuggestionDetailPage = () => {
             <ContentSection>
               <ContentText>{suggestion.content}</ContentText>
             </ContentSection>
+            <AnswerSection>
+              <AnswerTitle>답변 목록</AnswerTitle>
+              {suggestion.answers && suggestion.answers.length > 0 ? (
+                suggestion.answers.map((answer) => (
+                  <AnswerCard key={`answer-${answer.answerId}`}>
+                    <AnswerHeader>
+                      <AnswerMeta>
+                        <span>{answer.managerName}</span>
+                        <span>{answer.createDate}</span>
+                      </AnswerMeta>
+                    </AnswerHeader>
+                    <AnswerContent>{answer.content}</AnswerContent>
+                  </AnswerCard>
+                ))
+              ) : (
+                <EmptyMessage>답변이 없습니다</EmptyMessage>
+              )}
+            </AnswerSection>
           </MainSection>
         </Content>
       )}
@@ -400,6 +472,48 @@ const BackButton = styled(Button)`
   &:hover {
     background-color: ${({ theme }) => theme.colors.text.primary};
   }
+`;
+
+const AnswerSection = styled.div`
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const AnswerTitle = styled.h3`
+  font-size: 1.5rem;
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin-bottom: 1.5rem;
+`;
+
+const AnswerCard = styled.div`
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+`;
+
+const AnswerHeader = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const AnswerMeta = styled.div`
+  display: flex;
+  gap: 1rem;
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: 0.9rem;
+`;
+
+const AnswerContent = styled.div`
+  color: ${({ theme }) => theme.colors.text.primary};
+  line-height: 1.6;
+  white-space: pre-wrap;
+`;
+
+const EmptyMessage = styled.div`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  text-align: center;
+  margin-top: 1rem;
 `;
 
 export default SuggestionDetailPage;

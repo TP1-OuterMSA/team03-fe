@@ -21,7 +21,7 @@ export const suggestionService = {
       nickName: data.nickName ? data.nickName.trim() : null,
       category: data.category,
       content: data.content.trim(),
-      foodName: data.foodName.trim() || null
+      foodId: data.foodId
     };
     
     await api.post<ApiResponse<{}>>('/api/team3/analytics/suggestions', requestData);
@@ -29,13 +29,15 @@ export const suggestionService = {
 
   // 건의 수정
   updateSuggestion: async (suggestionId: number, data: CreateSuggestionRequest): Promise<void> => {
-    await api.put<ApiResponse<{}>>(`/api/team3/analytics/suggestions/${suggestionId}`, {
-      title: data.title,
-      nickName: data.nickName || null,
+    const requestData = {
+      title: data.title.trim(),
+      nickName: data.nickName ? data.nickName.trim() : null,
       category: data.category,
-      content: data.content,
-      foodName: data.foodName || null
-    });
+      content: data.content.trim(),
+      foodId: data.foodId
+    };
+    
+    await api.put<ApiResponse<{}>>(`/api/team3/analytics/suggestions/${suggestionId}`, requestData);
   },
 
   // 건의 삭제
