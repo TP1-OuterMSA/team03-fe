@@ -122,62 +122,44 @@ export const fetchSavedMealPlans = async (startDate: dayjs.Dayjs, endDate: dayjs
       return {};
     }
 
+
     if (typeof apiData === 'object' && apiData !== null) {
-      if (Array.isArray(apiData)) {
-        apiData.forEach((plan: any) => {
-          const dateKey = plan.date;
-          const mealTypeFromServer = (plan.mealType as string).toUpperCase() as MealType;
+      for (const dateKey in apiData) {
+        if (Object.prototype.hasOwnProperty.call(apiData, dateKey)) {
+          const dailyMeals = apiData[dateKey]; // 각 날짜에 해당하는 식단 배열
 
-          if (!fetchedPlans[dateKey]) {
-            fetchedPlans[dateKey] = {};
-          }
-          fetchedPlans[dateKey][mealTypeFromServer] = {
-            menuId: plan.menuId || '',
-            RICE: plan.rice || '',
-            SOUP: plan.soup || '',
-            MAIN_DISH: plan.mainDish || '',
-            SIDE_DISH: plan.sideDish || '',
-            DESSERT: plan.dessert || '',
-            allergies: plan.allergies || [],
-            score: plan.score !== undefined ? plan.score : null,
-            hashtags: plan.hashtags || [],
-          };
-        });
-      } else {
-        for (const dateKey in apiData) {
-          if (Object.prototype.hasOwnProperty.call(apiData, dateKey)) {
-            const mealDetails = apiData[dateKey];
-            if (mealDetails && typeof mealDetails === 'object') {
-              const mealTypeFromServer = (mealDetails.mealType as string)?.toUpperCase() as MealType;
-
-              if (!fetchedPlans[dateKey]) {
-                fetchedPlans[dateKey] = {};
-              }
+          if (Array.isArray(dailyMeals)) {
+            if (!fetchedPlans[dateKey]) {
+              fetchedPlans[dateKey] = {};
+            }
+            dailyMeals.forEach((meal: any) => {
+              const mealTypeFromServer = (meal.mealType as string).toUpperCase() as MealType;
 
               if (mealTypeFromServer) {
                 fetchedPlans[dateKey][mealTypeFromServer] = {
-                  menuId: mealDetails.menuId || '',
-                  RICE: mealDetails.rice || '',
-                  SOUP: mealDetails.soup || '',
-                  MAIN_DISH: mealDetails.mainDish || '',
-                  SIDE_DISH: mealDetails.sideDish || '',
-                  DESSERT: mealDetails.dessert || '',
-                  allergies: mealDetails.allergies || [],
-                  score: mealDetails.score !== undefined ? mealDetails.score : null,
-                  hashtags: mealDetails.hashtags || [],
+                  menuId: meal.menuId || '',
+                  RICE: meal.rice || '',
+                  SOUP: meal.soup || '',
+                  MAIN_DISH: meal.mainDish || '',
+                  SIDE_DISH: meal.sideDish || '',
+                  DESSERT: meal.dessert || '',
+                  allergies: meal.allergies || [],
+                  score: meal.score !== undefined ? meal.score : null,
+                  hashtags: meal.hashtags || [],
                 };
               } else {
-                console.warn(`Warning: Invalid mealType for date ${dateKey}:`, mealDetails.mealType);
+                console.warn(`Warning: Invalid mealType for date ${dateKey}:`, meal.mealType);
               }
-            }
+            });
+          } else {
+            console.warn(`Warning: Expected an array of meals for date ${dateKey}, but got:`, dailyMeals);
           }
         }
       }
     } else {
-      console.warn("API 응답의 'data' 속성이 예상된 배열이나 객체가 아닙니다:", apiData);
+      console.warn("API 응답의 'data' 속성이 예상된 객체가 아닙니다:", apiData);
       return {};
     }
-    console.log(fetchedPlans);
     return fetchedPlans;
   } catch (error) {
     console.error('Error fetching meal plans:', error);
@@ -187,7 +169,6 @@ export const fetchSavedMealPlans = async (startDate: dayjs.Dayjs, endDate: dayjs
 
 
 export const createMealPlan = async (date: string, mealType: MealType, mealData: Omit<MealTypeDetails, 'allergies' | 'score' | 'menuId'>, hashtags: string[]): Promise<MealTypeDetails> => {
-  console.log(`API: Creating meal plan for ${date}, ${mealType}`, mealData, `Hashtags: ${hashtags}`);
   try {
     const payload = {
       RICE: mealData.RICE,
@@ -222,7 +203,6 @@ export const createMealPlan = async (date: string, mealType: MealType, mealData:
         hashtags: hashtags,
         score: null,
       };
-      console.log('API: Meal plan created successfully:', createdMeal);
       return createdMeal;
     } else {
       console.error('API Error creating meal plan:', response.data.message);
@@ -235,7 +215,6 @@ export const createMealPlan = async (date: string, mealType: MealType, mealData:
 };
 
 export const updateMealPlan = async (menuId: string, mealData: Omit<MealTypeDetails, 'allergies' | 'score' | 'menuId'>, hashtags: string[]): Promise<MealTypeDetails> => {
-  console.log(`API: Updating meal plan with menuId: ${menuId}`, mealData, `Hashtags: ${hashtags}`);
   try {
     const payload = {
       RICE: mealData.RICE, 
@@ -245,7 +224,6 @@ export const updateMealPlan = async (menuId: string, mealData: Omit<MealTypeDeta
       DESSERT: mealData.DESSERT, 
       hashtags: hashtags,
     };
-    console.log("Update Payload:", payload); 
 
     const response = await api.put<ApiResponse<{ menuId: string, allergies: string[] }>>(
       `/api/team3/analytics/products/menus/${menuId}`,
@@ -271,7 +249,6 @@ export const updateMealPlan = async (menuId: string, mealData: Omit<MealTypeDeta
         hashtags: hashtags,
         score: null, 
       };
-      console.log('API: Meal plan updated successfully:', updatedMeal);
       return updatedMeal;
     } else {
       console.error('API Error updating meal plan:', response.data.message);
@@ -285,7 +262,6 @@ export const updateMealPlan = async (menuId: string, mealData: Omit<MealTypeDeta
 
 
 export const deleteMealPlan = async (menuId: string): Promise<void> => {
-  console.log(`API: Deleting meal plan with menuId: ${menuId}`);
   try {
     const response = await api.delete<ApiResponse<any>>(
       `/api/team3/analytics/products/menus/${menuId}`,
@@ -297,7 +273,6 @@ export const deleteMealPlan = async (menuId: string): Promise<void> => {
     );
 
     if (response.data.httpStatusCode === 200 && response.data.resultType === 'SUCCESS') {
-      console.log(`API: Meal plan with menuId ${menuId} deleted successfully.`);
       return;
     } else {
       console.error('API Error deleting meal plan:', response.data.message);
@@ -309,20 +284,7 @@ export const deleteMealPlan = async (menuId: string): Promise<void> => {
   }
 };
 
-
-export const predictMealScore = async (mealData: Omit<MealTypeDetails, 'allergies' | 'hashtags' | 'score'>): Promise<number> => {
-  console.log(`API: Requesting meal score prediction:`, mealData);
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const dummyScore = Math.floor(Math.random() * 30) + 70; 
-      console.log(`API: Predicted meal score: ${dummyScore}`);
-      resolve(dummyScore);
-    }, 700);
-  });
-};
-
 export const deleteHashtag = async (date: string, mealType: MealType, hashtag: string): Promise<void> => {
-  console.log(`API: Deleting hashtag: ${date}, ${mealType}, ${hashtag}`);
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (currentDummySavedMealPlans[date] && currentDummySavedMealPlans[date][mealType]) {
@@ -338,7 +300,6 @@ export const deleteHashtag = async (date: string, mealType: MealType, hashtag: s
               [mealType]: mealDetails
             }
           };
-          console.log(`API: Hashtag deleted: ${date}, ${mealType}, ${hashtag}`);
           resolve();
         } else {
           reject(new Error('해시태그를 찾을 수 없습니다.'));
@@ -351,7 +312,6 @@ export const deleteHashtag = async (date: string, mealType: MealType, hashtag: s
 };
 
 export const fetchMenuOptions = async (): Promise<MenuOptions> => {
-  console.log('API: Fetching menu options');
   try {
     const response = await api.get<ApiResponse<any>>('/api/team3/analytics/products/foods');
 
@@ -379,7 +339,6 @@ export const fetchMenuOptions = async (): Promise<MenuOptions> => {
           }
         }
       }
-      console.log('API: Successfully fetched and transformed menu options.', transformedOptions);
       return transformedOptions;
     } else {
       console.error('API Error fetching menu options:', response.data.message);
