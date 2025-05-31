@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { api } from '../../api/axios';
 
 class ActionProvider {
   createChatBotMessage: any;
@@ -10,66 +10,62 @@ class ActionProvider {
   }
 
   handleGeneralMessage = (question: string) => {
-    this.setState((prevState: any) => {
-      if (!prevState.category) {
-        const errorMessage = this.createChatBotMessage('먼저 급식 정보 또는 급식 피드백 중에서 선택해주세요.');
-        return {
-          ...prevState,
-          messages: [...prevState.messages, errorMessage],
-        };
-      }
-      const processingMessage = this.createChatBotMessage('잠시만 기다려주세요', { delay: 0 });
-      this.setState((prev: any) => ({ ...prev, messages: [...prev.messages, processingMessage] }));
-      this.handleApiResponse(prevState.category, question);
-      return prevState;
-    });
-  };
-
-  handleApiResponse = (category: string, question: string) => {
-    const apiUrl =
-      'http://k8s-msaservices-7d023f0bb9-676035063.ap-northeast-2.elb.amazonaws.com/api/team3/analytics/chatbot/basic-chatbot-request';
-
-    axios
-      .post(apiUrl, { category, question })
-      .then((response) => {
-        const data = response.data;
-        let answerMessage = data.answer || '답변이 없습니다.';
-        answerMessage = answerMessage.replace(/\|n\|n/g, '\n\n').replace(/\\nln/g, '\n');
-        const referenceDocuments = data.relevant_documents;
-
-        const finalMessage = this.createChatBotMessage(answerMessage, {
-          payload: referenceDocuments,
-          delay: 0,
-        });
-
-        this.setState((prev: any) => ({
-          ...prev,
-          messages: prev.messages.filter((msg: { message: string }) => msg.message !== '잠시만 기다려주세요').concat([finalMessage, this.createChatBotMessage('더 궁금한 것이 있으신가요?', { widget: 'endOptions', withAvatar: true, payload: referenceDocuments, delay: 0 })]),
-        }));
-      })
-      .catch((error) => {
-        const errorMessage = this.createChatBotMessage(`오류가 발생했습니다: ${error.message}`, { delay: 0 });
-        this.setState((prev: any) => ({
-          ...prev,
-          messages: prev.messages.filter((msg: { message: string }) => msg.message !== '잠시만 기다려주세요').concat([errorMessage]),
-        }));
-      });
-  };
-
-  handleCategorySelect = (category: string) => {
-    this.setState((prevState: any) => ({
-      ...prevState,
-      category: category,
-      messages: [
-        ...prevState.messages,
-        this.createChatBotMessage(
-          `선택하신 카테고리는 ${
-            category === 'FOOD_INFO' ? '급식 정보' : '급식 피드백'
-          }입니다. 질문을 입력하세요.`,
-          { withAvatar: true, delay: 0, widget: undefined }
-        ),
-      ],
+    const processingMessage = this.createChatBotMessage('잠시만 기다려주세요', { delay: 0 });
+    this.setState((prev: any) => ({
+      ...prev,
+      messages: [...prev.messages, processingMessage],
     }));
+
+    this.handleApiResponse(question);
+  };
+
+  handleApiResponse = async (question: string) => {
+    try {
+      const response = await api.post('/api/team3/analytics/chatbot/agent-chatbot-request', { question });
+      const data = response.data;
+
+      let answerMessage = data.answer || '답변이 없습니다.';
+      answerMessage = answerMessage.replace(/\|n\|n/g, '\n\n').replace(/\\nln/g, '\n');
+
+      const referenceDocuments = data.relevant_documents;
+      const cot = data.chainOfThought;
+
+      // 🔍 COT 로그 출력
+      console.log('[Chain of Thought]', cot);
+
+      const payload = {
+        references: referenceDocuments,
+        cot,
+      };
+
+      const finalMessage = this.createChatBotMessage(answerMessage, {
+        payload,
+        delay: 0,
+      });
+
+      this.setState((prev: any) => ({
+        ...prev,
+        messages: prev.messages
+          .filter((msg: { message: string }) => msg.message !== '잠시만 기다려주세요')
+          .concat([
+            finalMessage,
+            this.createChatBotMessage('더 궁금한 것이 있으신가요?', {
+              widget: 'endOptions',
+              withAvatar: true,
+              payload,
+              delay: 0,
+            }),
+          ]),
+      }));
+    } catch (error: any) {
+      const errorMessage = this.createChatBotMessage(`오류가 발생했습니다: ${error.message}`, { delay: 0 });
+      this.setState((prev: any) => ({
+        ...prev,
+        messages: prev.messages
+          .filter((msg: { message: string }) => msg.message !== '잠시만 기다려주세요')
+          .concat([errorMessage]),
+      }));
+    }
   };
 
   handleEndChat = () => {
@@ -82,26 +78,53 @@ class ActionProvider {
   handleNewQuestion = () => {
     this.setState((prev: any) => ({
       ...prev,
-      category: null,
       messages: [
         ...prev.messages,
-        this.createChatBotMessage('새로운 질문을 시작합니다. 아래 카테고리 중 하나를 선택해주세요', {
+        this.createChatBotMessage('새로운 질문을 시작합니다. 질문을 입력해주세요.', {
           withAvatar: true,
           delay: 0,
-          widget: 'foodOptions',
         }),
       ],
     }));
   };
 
-  handleShowReferences = (references: any[]) => {
+  handleShowReferences = (payload: any) => {
+    const references = payload.references || [];
+
     let referenceText = '참고 문헌:\n\n';
-    references.forEach((ref) => {
+    references.forEach((ref: any) => {
       referenceText += `- ${ref.document} (유사도: ${ref.similarity ? ref.similarity.toFixed(2) : 'N/A'})\n`;
     });
+
     this.setState((prev: any) => ({
       ...prev,
-      messages: [...prev.messages, this.createChatBotMessage(referenceText, { delay: 0 }), this.createChatBotMessage('더 궁금한 것이 있으신가요?', { widget: 'endOptions', withAvatar: true, payload: [], delay: 0 })],
+      messages: [
+        ...prev.messages,
+        this.createChatBotMessage(referenceText, { delay: 0 }),
+        this.createChatBotMessage('더 궁금한 것이 있으신가요?', {
+          widget: 'endOptions',
+          withAvatar: true,
+          payload,
+          delay: 0,
+        }),
+      ],
+    }));
+  };
+
+  handleShowCot = (payload: any) => {
+    const cot = payload.cot || '추론 과정이 없습니다.';
+    this.setState((prev: any) => ({
+      ...prev,
+      messages: [
+        ...prev.messages,
+        this.createChatBotMessage(`🧠 추론 과정:\n\n${cot}`, { delay: 0 }),
+        this.createChatBotMessage('더 궁금한 것이 있으신가요?', {
+          widget: 'endOptions',
+          withAvatar: true,
+          payload,
+          delay: 0,
+        }),
+      ],
     }));
   };
 }

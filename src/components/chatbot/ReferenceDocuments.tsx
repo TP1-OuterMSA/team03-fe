@@ -1,8 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 
+export interface ReferenceDocumentsPayload {
+    references?: any[]; // references는 선택적이며 배열일 수 있습니다.
+    cot?: any; // cot은 선택적이며 어떤 타입이든 될 수 있습니다.
+    // 필요에 따라 payload에 다른 속성이 있다면 여기에 추가합니다.
+}
+
 export interface ReferenceDocumentsProps {
-    payload: any[];
+    payload: ReferenceDocumentsPayload; // payload 타입을 변경
     actionProvider: any;
 }
 

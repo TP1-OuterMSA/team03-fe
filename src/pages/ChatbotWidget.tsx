@@ -1,4 +1,4 @@
-import { useState } from 'react'; 
+import { useState } from 'react';
 import Chatbot from 'react-chatbot-kit';
 import 'react-chatbot-kit/build/main.css';
 import { Bot, X } from 'lucide-react';
@@ -15,7 +15,7 @@ const ChatbotContainer = styled.div`
 `;
 
 const ChatbotOpenWrapper = styled.div`
-  width: 320px;
+  width: 640px; /* 챗봇 전체 너비 */
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -67,20 +67,21 @@ const ChatbotContentWrapper = styled.div`
   }
 
   .react-chatbot-kit-chat-message-container {
+    /* 메시지 컨테이너 자체의 패딩을 줄이거나 없애서 메시지가 더 많은 공간을 차지하도록 합니다. */
     margin: 0 !important;
-    padding: 8px !important;
+    padding: 8px !important; /* 기본 패딩 유지 또는 조절 */
     overflow-x: hidden;
     overflow-y: auto;
     flex-direction: column;
     align-items: flex-start;
 
     &::-webkit-scrollbar {
-      width: 6px; 
+      width: 6px;
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.2); 
-      border-radius: 3px; 
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
     }
 
     &::-webkit-scrollbar-track {
@@ -108,18 +109,25 @@ const ChatbotContentWrapper = styled.div`
     margin-right: 0 !important;
   }
 
-  .react-chatbot-kit-user-chat-message {
-    margin-right: 0 !important;
+  /* 챗봇 봇 메시지 너비 조정 */
+  .react-chatbot-kit-chat-bot-message {
+    width: calc(100% - 200px) !important; /* 메시지 컨테이너의 패딩을 고려하여 최대 너비 설정 */
+    margin-left: 0 !important;
+    word-break: break-word; /* 긴 단어가 잘리지 않고 다음 줄로 넘어가도록 함 */
+    white-space: pre-wrap; /* 공백과 줄바꿈을 유지하면서 자동 줄바꿈 */
   }
 
-  .react-chatbot-kit-chat-bot-message {
-    margin-left: 0 !important;
+  /* 챗봇 사용자 메시지 너비 조정 */
+  .react-chatbot-kit-user-chat-message {
+    max-width: calc(100% - 20px) !important; /* 메시지 컨테이너의 패딩을 고려하여 최대 너비 설정 */
+    margin-right: 0 !important;
+    word-break: break-word; /* 긴 단어가 잘리지 않고 다음 줄로 넘어가도록 함 */
+    white-space: pre-wrap; /* 공백과 줄바꿈을 유지하면서 자동 줄바꿈 */
   }
 
   .react-chatbot-kit-chat-input::placeholder { /* 플레이스홀더 스타일 */
     color: #333; /* 플레이스홀더 텍스트 색상 */
     opacity: 1; /* 플레이스홀더 투명도 (기본값) */
-    content: "답변을 입력하세요"; /* 플레이스홀더 텍스트 변경 (일부 브라우저 지원) */
   }
 
   .react-chatbot-kit-chat-scroll-container {
@@ -171,7 +179,7 @@ const ChatbotWidget = () => {
                 actionProvider={ActionProvider}
               />
             </div>
-          </ChatbotContentWrapper>        
+          </ChatbotContentWrapper>
         </ChatbotOpenWrapper>
       )}
       {!isOpen && (
