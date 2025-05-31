@@ -1,3 +1,4 @@
+import React from 'react';
 import { ThemeProvider } from 'styled-components';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import GlobalStyle from './styles/GlobalStyle';
@@ -11,8 +12,16 @@ import FrequencyMenu from './pages/FrequencyMenu';
 import LLMReportList from './pages/LLMReportList';
 import LLMReportDetail from './pages/LLMReportDetail';
 import CreateMenu from './pages/CreateMenu';
+import Suggestion from './pages/Suggestion';
+import SuggestionDetail from './pages/SuggestionDetail';
+import SuggestionAnswer from './pages/SuggestionAnswer';
+import FoodAnalyzePage from './pages/FoodAnalyze';
+import FoodAnalyzeDetailPage from './pages/FoodAnalyzeDetail';
+import GoalPage from './pages/Goal';
+import GoalDetail from './pages/GoalDetail';
 
-const App = () => {
+
+const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
@@ -27,6 +36,14 @@ const App = () => {
             <Route path="/team3/admin/wanted-menus" element={<WantedMenusPage />} />
             <Route path="/team3/admin/frequency-menus" element={<FrequencyMenu />} />
             <Route path="/team3/admin/create-menu" element={<CreateMenu />} />
+            <Route path="/team3/admin/suggestion" element={<Suggestion />} />
+            <Route path="/team3/admin/suggestion/:id" element={<SuggestionDetail />} />
+            <Route path="/team3/admin/suggestion-answer" element={<SuggestionAnswer />} />
+            <Route path="/team3/admin/suggestion-answer/:id" element={<SuggestionAnswer />} />
+            <Route path="/team3/admin/food-analyze" element={<FoodAnalyzePage />} />
+            <Route path="/team3/admin/food-analyze/:id" element={<FoodAnalyzeDetailPage />} />
+            <Route path="/team3/admin/goals" element={<GoalPage />} />
+            <Route path="/team3/admin/goals/:foodId" element={<GoalDetail />} />
           </Routes>
         </Layout>
       </Router>

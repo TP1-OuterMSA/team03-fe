@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { api } from '../../api/axios';
 
 class ActionProvider {
   createChatBotMessage: any;
@@ -19,57 +19,53 @@ class ActionProvider {
     this.handleApiResponse(question);
   };
 
-  handleApiResponse = (question: string) => {
-    const apiUrl =
-      'http://localhost:8080/api/team3/analytics/chatbot/agent-chatbot-request';
+  handleApiResponse = async (question: string) => {
+    try {
+      const response = await api.post('/api/team3/analytics/chatbot/agent-chatbot-request', { question });
+      const data = response.data;
 
-    axios
-      .post(apiUrl, { question })
-      .then((response) => {
-        const data = response.data;
-        let answerMessage = data.answer || '답변이 없습니다.';
-        answerMessage = answerMessage.replace(/\|n\|n/g, '\n\n').replace(/\\nln/g, '\n');
+      let answerMessage = data.answer || '답변이 없습니다.';
+      answerMessage = answerMessage.replace(/\|n\|n/g, '\n\n').replace(/\\nln/g, '\n');
 
-        const referenceDocuments = data.relevant_documents;
-        const cot = data.chainOfThought;
+      const referenceDocuments = data.relevant_documents;
+      const cot = data.chainOfThought;
 
-        // 🔍 COT 로그 출력
-        console.log('[Chain of Thought]', cot);
+      // 🔍 COT 로그 출력
+      console.log('[Chain of Thought]', cot);
 
-        const payload = {
-          references: referenceDocuments,
-          cot,
-        };
+      const payload = {
+        references: referenceDocuments,
+        cot,
+      };
 
-        const finalMessage = this.createChatBotMessage(answerMessage, {
-          payload,
-          delay: 0,
-        });
-
-        this.setState((prev: any) => ({
-          ...prev,
-          messages: prev.messages
-            .filter((msg: { message: string }) => msg.message !== '잠시만 기다려주세요')
-            .concat([
-              finalMessage,
-              this.createChatBotMessage('더 궁금한 것이 있으신가요?', {
-                widget: 'endOptions',
-                withAvatar: true,
-                payload,
-                delay: 0,
-              }),
-            ]),
-        }));
-      })
-      .catch((error) => {
-        const errorMessage = this.createChatBotMessage(`오류가 발생했습니다: ${error.message}`, { delay: 0 });
-        this.setState((prev: any) => ({
-          ...prev,
-          messages: prev.messages
-            .filter((msg: { message: string }) => msg.message !== '잠시만 기다려주세요')
-            .concat([errorMessage]),
-        }));
+      const finalMessage = this.createChatBotMessage(answerMessage, {
+        payload,
+        delay: 0,
       });
+
+      this.setState((prev: any) => ({
+        ...prev,
+        messages: prev.messages
+          .filter((msg: { message: string }) => msg.message !== '잠시만 기다려주세요')
+          .concat([
+            finalMessage,
+            this.createChatBotMessage('더 궁금한 것이 있으신가요?', {
+              widget: 'endOptions',
+              withAvatar: true,
+              payload,
+              delay: 0,
+            }),
+          ]),
+      }));
+    } catch (error: any) {
+      const errorMessage = this.createChatBotMessage(`오류가 발생했습니다: ${error.message}`, { delay: 0 });
+      this.setState((prev: any) => ({
+        ...prev,
+        messages: prev.messages
+          .filter((msg: { message: string }) => msg.message !== '잠시만 기다려주세요')
+          .concat([errorMessage]),
+      }));
+    }
   };
 
   handleEndChat = () => {
