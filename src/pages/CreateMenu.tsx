@@ -458,12 +458,15 @@ const handleHashtagToggle = useCallback((date: string, mealType: MealType, hasht
                   <SelectRow>
                     <SelectLabel>해시태그</SelectLabel>
                     <SelectedHashtagDisplay>
-                      {currentHashtags.map(tag => (
-                        <SelectedTag key={tag}>
-                          #{tag}
-                          <DeleteTagButton onClick={() => handleDeleteHashtag(dateKey, currentSelectedMealType, tag, true)}>x</DeleteTagButton>
-                        </SelectedTag>
-                      ))}
+                      {currentHashtags
+                          .filter(tag => tag !== '') 
+                          .map(tag => (
+                            <SelectedTag key={tag}>
+                              #{tag}
+                              <DeleteTagButton onClick={() => handleDeleteHashtag(dateKey, currentSelectedMealType, tag, true)}>x</DeleteTagButton>
+                            </SelectedTag>
+                          ))
+                        }
                       <MenuSelect
                         value=""
                         onChange={(e) => {
@@ -488,7 +491,7 @@ const handleHashtagToggle = useCallback((date: string, mealType: MealType, hasht
                     ) : (
                       <ActionButton onClick={() => handleSaveMealPlan(dateKey, currentSelectedMealType)}>저장</ActionButton>
                     )}
-                    <ActionButton danger onClick={handleCancelEdit}>취소</ActionButton>
+                    <ActionButton onClick={handleCancelEdit}>취소</ActionButton>
                   </ButtonGroup>
                 </>
               ) : (
@@ -504,36 +507,39 @@ const handleHashtagToggle = useCallback((date: string, mealType: MealType, hasht
                       </MenuList>
                       <InfoSection>
                         <InfoLabel>알레르기 정보:</InfoLabel>
+                        <p></p>
                        <InfoContent>{'allergies' in currentMeal && Array.isArray(currentMeal.allergies) && currentMeal.allergies.length > 0
                             ? currentMeal.allergies.join(', ')
                             : '없음'}</InfoContent>
                       </InfoSection>
                       <InfoSection>
-                        <HashtagList>
-                          {currentHashtags.map(tag => (
-                            <HashtagItem key={tag}>
-                              {isEditing ? (
-                               <>
-                              #{tag} <DeleteTagButtonSmall onClick={() => handleDeleteHashtag(dateKey, currentSelectedMealType, tag, false)}>x</DeleteTagButtonSmall>
-                              </> ) : (
-                                <>
-                                #{tag}
-                                </>
-                              )}
-                            </HashtagItem>
-                          ))}
-                        </HashtagList>
+                        
+                          <HashtagList>
+                            {currentHashtags.filter(tag => tag !== '').map(tag => (
+                              <HashtagItem key={tag}>
+                                {isEditing ? (
+                                  <>
+                                    #{tag}
+                                    <DeleteTagButtonSmall onClick={() => handleDeleteHashtag(dateKey, currentSelectedMealType, tag, false)}>x</DeleteTagButtonSmall>
+                                  </>
+                                ) : (
+                                  <>#{tag}</>
+                                )}
+                              </HashtagItem>
+                            ))}
+                          </HashtagList>
+                        
                       </InfoSection>
                       <ButtonGroup>
                         <ActionButton onClick={() => handleEditMode(dateKey, currentSelectedMealType)}>수정</ActionButton>
-                        <ActionButton danger onClick={() => handleDeleteMealPlan(currentMeal.menuId)}>삭제</ActionButton>
+                        <ActionButton onClick={() => handleDeleteMealPlan(currentMeal.menuId)}>삭제</ActionButton>
                       </ButtonGroup>
                     </>
                   ) : (
                     <EmptyMealPlan>
                       <p>해당 날짜 {currentSelectedMealType === 'BREAK_FAST' ? '조식' : currentSelectedMealType === 'LUNCH' ? '중식' : '석식'}에</p>
                       <p>저장된 식단이 없습니다.</p>
-                      <ActionButton primary onClick={() => handleEditMode(dateKey, currentSelectedMealType)}>식단 추가</ActionButton>
+                      <ActionButton onClick={() => handleEditMode(dateKey, currentSelectedMealType)}>식단 추가</ActionButton>
                     </EmptyMealPlan>
                   )}
                 </>
