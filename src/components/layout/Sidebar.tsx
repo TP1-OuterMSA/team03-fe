@@ -6,6 +6,7 @@ import dashboardIcon from '../../assets/images/sidebar/dashboard.png';
 import llmAnalysisIcon from '../../assets/images/sidebar/llm-anaylsis.png';
 import llmReportListIcon from '../../assets/images/sidebar/report.png';
 import menuRankingIcon from '../../assets/images/sidebar/menu-ranking.png';
+import menuIcon from '../../assets/images/sidebar/menu.png';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -17,10 +18,12 @@ const Sidebar = () => {
     { path: '/team3/admin/llm-report-list', label: 'LLM 보고서 목록', icon: llmReportListIcon },
     { path: '/team3/admin/menu-ranking', label: '메뉴 랭킹', icon: menuRankingIcon },
     { path: '/team3/admin/wanted-menus', label: '먹고싶은 메뉴', icon: menuRankingIcon },
+    { path: '/team3/admin/create-menu', label: '식단 짜기', icon: menuIcon },
     { path: '/team3/admin/suggestion', label: '건의함', icon: menuRankingIcon },
     { path: '/team3/admin/suggestion-answer', label: '건의함 답변', icon: menuRankingIcon },
     { path: '/team3/admin/food-analyze', label: '음식 통계', icon: menuRankingIcon },
     { path: '/team3/admin/goals', label: '목표 관리', icon: menuRankingIcon },
+
   ];
 
   return (
