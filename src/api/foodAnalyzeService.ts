@@ -8,7 +8,7 @@ import {
   DateRange 
 } from '../interface/foodAnalyze';
 
-const BASE_URL = 'http://localhost:8080/api/team3/analytics';
+const BASE_URL = 'http://k8s-msaservices-7d023f0bb9-676035063.ap-northeast-2.elb.amazonaws.com/api/team3/analytics';
 
 export const foodAnalyzeService = {
   // 모든 음식 목록 조회
