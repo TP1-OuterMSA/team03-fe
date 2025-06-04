@@ -21,7 +21,8 @@ permissions:
   contents: read
 jobs:
   deploy:
-    if: ${{ github.event.pull_request.merged && !contains(github.event.pull_request.labels.*.name, 'Skip:CD') }}
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.merged && !contains(github.event.pull_request.labels.*.name, 'Skip:CD')) ||(github.event_name == 'push')
     name: Deploy
     runs-on: ubuntu-22.04
     environment: development
