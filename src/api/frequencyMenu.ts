@@ -41,6 +41,7 @@ export const getFrequency = async (selectedPeriod: SelectedPeriod): Promise<Resp
     '/api/team3/analytics/statistics/food/frequency',
     { params: query }
   );
+  console.log(response.data);
   return response.data;
 };
 

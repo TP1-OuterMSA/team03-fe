@@ -170,6 +170,8 @@ function formatFrequencyData(response: ResponseData): FrequencyData {
     CLEAR_SOUP: '맑은국',
     SPICY_SOUP: '얼큰한 국/찌개',
     STEW: '찌개류',
+    MEAT_SOUP: '고기국',
+    FISH_SOUP: '생선국',
 
     FRUIT: '과일',
     DAIRY : '유제품',

@@ -190,6 +190,8 @@ export const createMealPlan = async (date: string, mealType: MealType, mealData:
       }
     );
 
+    console.log(response);
+
     if (response.data.httpStatusCode === 201 && response.data.resultType === 'SUCCESS') {
       const { menuId, allergies } = response.data.data;
       const createdMeal: MealTypeDetails = {

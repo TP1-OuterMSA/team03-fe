@@ -30,7 +30,7 @@ export const getCategoryRatings = async (
 
   const mappedData = rawData.map((item: { category: string; totalScore: number }) => ({
     category: categoryNameMap[item.category] || item.category, 
-    score: item.totalScore,
+    average: item.totalScore,
   }));
 
   return mappedData;
